@@ -31,8 +31,8 @@ export function useLeva(selected: Object3D | null) {
   useEffect(() => {
     fetch("/objectTransforms.json")
       .then((response) => response.json())
-      .then((initials: Record<string, Transform>) => {
-        for (const [name, transform] of Object.entries(initials)) {
+      .then((data: Record<string, Transform>) => {
+        for (const [name, transform] of Object.entries(data)) {
           const object = scene.getObjectByName(name);
           if (object) applyTransform(object, transform);
         }
@@ -49,10 +49,11 @@ export function useLeva(selected: Object3D | null) {
 
     "Copy Transform": button(() => {
       const object = selectedRef.current;
-      if (!object) return;
-      console.log(
-        JSON.stringify({ [object.name]: getTransform(object) }, null, 2),
-      );
+      if (object) {
+        console.log(
+          JSON.stringify({ [object.name]: getTransform(object) }, null, 2),
+        );
+      }
     }),
   }));
 
