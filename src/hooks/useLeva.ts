@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
+import { useMap } from "react-three-map/maplibre";
 import { useControls, button } from "leva";
 import type { Object3D } from "three";
 
@@ -27,6 +28,7 @@ function applyTransform(object: Object3D, transform: Transform) {
 
 export function useLeva(selected: Object3D | null) {
   const scene = useThree((state) => state.scene);
+  const map = useMap();
 
   useEffect(() => {
     fetch("/objectTransforms.json")
@@ -36,6 +38,7 @@ export function useLeva(selected: Object3D | null) {
           const object = scene.getObjectByName(name);
           if (object) applyTransform(object, transform);
         }
+        map.triggerRepaint();
       });
   }, [scene]);
 
@@ -57,12 +60,15 @@ export function useLeva(selected: Object3D | null) {
     }),
   }));
 
-  useFrame(() => {
+  useEffect(() => {
     if (selected) set(getTransform(selected));
-  });
+  }, [selected, set]);
 
   useEffect(() => {
     const object = selectedRef.current;
-    if (object) applyTransform(object, values as Transform);
+    if (object) {
+      applyTransform(object, values as Transform);
+      map.triggerRepaint();
+    }
   }, [values]);
 }
