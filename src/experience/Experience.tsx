@@ -17,9 +17,21 @@ function Experience() {
       <OrbitControls makeDefault />
 
       <Transform isDev={isDev} selected={selected}>
-        <Sphere onClick={handleSelect} position={[-3, 0, 0]} />
-        <Sphere onClick={handleSelect} position={[0, 0, 0]} />
-        <Sphere onClick={handleSelect} position={[3, 0, 0]} />
+        <Sphere
+          name="sphere-left"
+          onClick={handleSelect}
+          position={[-3, 0, 0]}
+        />
+        <Sphere
+          name="sphere-center"
+          onClick={handleSelect}
+          position={[0, 0, 0]}
+        />
+        <Sphere
+          name="sphere-right"
+          onClick={handleSelect}
+          position={[3, 0, 0]}
+        />
       </Transform>
     </>
   );

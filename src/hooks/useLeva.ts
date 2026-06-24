@@ -1,60 +1,67 @@
-import { useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import type { Object3D } from "three";
 
 type Vec3 = [number, number, number];
 
+interface Transform {
+  position: Vec3;
+  rotation: Vec3;
+  scale: Vec3;
+}
+
+function getTransform(object: Object3D): Transform {
+  return {
+    position: [object.position.x, object.position.y, object.position.z],
+    rotation: [object.rotation.x, object.rotation.y, object.rotation.z],
+    scale: [object.scale.x, object.scale.y, object.scale.z],
+  };
+}
+
+function applyTransform(object: Object3D, transform: Transform) {
+  object.position.set(...transform.position);
+  object.rotation.set(...transform.rotation);
+  object.scale.set(...transform.scale);
+}
+
 export function useLeva(selected: Object3D | null) {
+  const scene = useThree((state) => state.scene);
+
+  useEffect(() => {
+    fetch("/objectTransforms.json")
+      .then((response) => response.json())
+      .then((initials: Record<string, Transform>) => {
+        for (const [name, transform] of Object.entries(initials)) {
+          const object = scene.getObjectByName(name);
+          if (object) applyTransform(object, transform);
+        }
+      });
+  }, [scene]);
+
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
   const [values, set] = useControls("Transform", () => ({
-    position: { value: [0, 0, 2.761183307347496], step: 0.01 },
-    rotation: { value: [1.5000000000000007, 0, 0], step: 0.01 },
-    scale: { value: [4.030814777822578, 1.27, 1], step: 0.01 },
+    position: { value: [0, 0, 0], step: 0.01 },
+    rotation: { value: [0, 0, 0], step: 0.01 },
+    scale: { value: [1, 1, 1], step: 0.01 },
 
-    "📋 Copy Defaults": button(() => {
-      if (!selected) return;
-
-      const pos = selected.position.toArray();
-      const rot = selected.rotation.toArray();
-      const scl = selected.scale.toArray();
-
-      const output = `
-          position: { value: [${pos[0]}, ${pos[1]}, ${pos[2]}], step: 0.01 },
-          rotation: { value: [${rot[0]}, ${rot[1]}, ${rot[2]}], step: 0.01 },
-          scale: { value: [${scl[0]}, ${scl[1]}, ${scl[2]}], step: 0.01 },
-      `.trim();
-
-      console.log("🔥 COPY INTO useControls:\n\n" + output);
+    "Copy Transform": button(() => {
+      const object = selectedRef.current;
+      if (!object) return;
+      console.log(
+        JSON.stringify({ [object.name]: getTransform(object) }, null, 2),
+      );
     }),
   }));
 
-  // Object → Leva (gizmo updates UI)
   useFrame(() => {
-    if (!selected) return;
-
-    set({
-      position: [
-        selected.position.x,
-        selected.position.y,
-        selected.position.z,
-      ] as Vec3,
-
-      rotation: [
-        selected.rotation.x,
-        selected.rotation.y,
-        selected.rotation.z,
-      ] as Vec3,
-
-      scale: [selected.scale.x, selected.scale.y, selected.scale.z] as Vec3,
-    });
+    if (selected) set(getTransform(selected));
   });
 
-  // Leva → Object (manual edits)
   useEffect(() => {
-    if (!selected) return;
-
-    selected.position.set(...values.position);
-    selected.rotation.set(...values.rotation);
-    selected.scale.set(...values.scale);
-  }, [values, selected]);
+    const object = selectedRef.current;
+    if (object) applyTransform(object, values as Transform);
+  }, [values]);
 }
