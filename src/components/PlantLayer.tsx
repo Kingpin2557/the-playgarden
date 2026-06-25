@@ -29,7 +29,7 @@ function PlantLayer({ config }: { config: PlantConfig }) {
     >
       <mesh>
         <planeGeometry args={[200, 200]} />
-        <meshStandardMaterial color="lightgreen" />
+        <meshStandardMaterial color="lightgreen" vertexColors={true} />
       </mesh>
       <instancedMesh
         args={[model.geometry, model.material, config.count]}

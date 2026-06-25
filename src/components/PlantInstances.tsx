@@ -5,7 +5,6 @@ export interface PlantConfig {
   nodeName: string;
   scale: number;
   count: number;
-  // Future: add a weightMap property here
 }
 
 interface InstancesProps {
