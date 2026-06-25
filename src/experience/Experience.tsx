@@ -23,16 +23,26 @@ function Experience({ isDev }: { isDev: boolean }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const MY_PLANTS = [
-    { url: "/models/plant.glb", nodeName: "SM_Plant_02_LOD1", scale: 0.05 },
-    { url: "/models/rock.glb", nodeName: "SM_Rock_01_LOD1", scale: 0.02 },
+  const MY_NATURE = [
+    {
+      url: "/models/plant.glb",
+      nodeName: "SM_Plant_02_LOD1",
+      scale: 0.05,
+      count: 10000,
+    },
+    {
+      url: "/models/rock.glb",
+      nodeName: "SM_Rock_01_LOD1",
+      scale: 0.02,
+      count: 500,
+    },
   ];
 
   return (
     <>
       <ambientLight intensity={Math.PI} />
       <directionalLight position={[10, 20, 10]} intensity={2} />
-      <PlantInstances models={MY_PLANTS} />
+      <PlantInstances models={MY_NATURE} />
 
       <Transform selected={selected}>
         <Sphere name="sphere-left" onPointerDown={handleSelect}>

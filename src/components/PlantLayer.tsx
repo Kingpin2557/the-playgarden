@@ -17,7 +17,7 @@ function PlantLayer({ config }: { config: PlantConfig }) {
 
   return (
     <Sampler
-      count={5000} // You can eventually make this part of the config
+      count={config.count} // You can eventually make this part of the config
       transform={({ dummy, position, normal }) => {
         dummy.position.copy(position);
         dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
@@ -32,7 +32,7 @@ function PlantLayer({ config }: { config: PlantConfig }) {
         <meshStandardMaterial color="lightgreen" />
       </mesh>
       <instancedMesh
-        args={[model.geometry, model.material, 5000]}
+        args={[model.geometry, model.material, config.count]}
         frustumCulled={false}
       />
     </Sampler>
