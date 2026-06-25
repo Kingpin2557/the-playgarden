@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import * as THREE from "three";
 
 import { Sphere, Outlines } from "@react-three/drei";
+import Instances from "../components/Instances";
 
 function Experience({ isDev }: { isDev: boolean }) {
   const [selected, setSelected] = useState<THREE.Object3D | null>(null);
@@ -26,6 +27,7 @@ function Experience({ isDev }: { isDev: boolean }) {
     <>
       <ambientLight intensity={Math.PI} />
       <directionalLight position={[10, 20, 10]} intensity={2} />
+      <Instances />
 
       <Transform selected={selected}>
         <Sphere name="sphere-left" onPointerDown={handleSelect}>
