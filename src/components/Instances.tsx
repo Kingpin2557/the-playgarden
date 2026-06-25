@@ -3,19 +3,21 @@ import * as THREE from "three";
 import { Sampler, useGLTF } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
 
-const TREE_SCALE = 1; // tweak until the trees look right
-const UP = new THREE.Vector3(0, 1, 0); // the model's up axis
+const COUNT = 10000;
+const SCALE = 0.05; // tweak until the trees look right
+const UP = new THREE.Vector3(0, 0, 1); // the model's up axis
 
 function Instances() {
   const map = useMap();
-  const { nodes } = useGLTF("/models/tree.glb");
-  const tree = nodes.SM_Trunk01001 as THREE.Mesh;
-  const material = tree.material as THREE.MeshStandardMaterial;
+  const { nodes } = useGLTF("/models/plant.glb");
+  const model = nodes.SM_Plant_02_LOD1 as THREE.Mesh;
+  console.log(nodes);
+  const material = model.material as THREE.MeshStandardMaterial;
 
   // Use alpha cut-out instead of blending: crisp leaf edges AND correct depth.
   // Done once (needsUpdate recompiles the shader, so don't run it every frame).
   useEffect(() => {
-    material.alphaTest = 0.5; // raise to trim more edge, lower to keep more
+    material.alphaTest = 0.5;
     material.transparent = false;
     material.depthWrite = true;
     material.needsUpdate = true;
@@ -26,12 +28,13 @@ function Instances() {
   return (
     <group rotation={[-Math.PI / 2, 0, 0]}>
       <Sampler
-        count={1000}
+        count={COUNT}
         transform={({ dummy, position, normal }) => {
           dummy.position.copy(position);
           dummy.quaternion.setFromUnitVectors(UP, normal);
-          dummy.rotateY(Math.random() * Math.PI * 2);
-          dummy.scale.setScalar(TREE_SCALE);
+          dummy.rotateX(Math.PI);
+          dummy.rotateZ(Math.random() * Math.PI * 2);
+          dummy.scale.setScalar(SCALE);
           dummy.updateMatrix();
         }}
       >
@@ -41,7 +44,7 @@ function Instances() {
         </mesh>
 
         <instancedMesh
-          args={[tree.geometry, tree.material, 1000]}
+          args={[model.geometry, model.material, COUNT]}
           frustumCulled={false}
         />
       </Sampler>
