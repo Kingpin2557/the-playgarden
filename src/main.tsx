@@ -7,7 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import "./index.css";
 import Buildings from "./components/Buildings.tsx";
-import Experience from "./experience/Experience.tsx";
+import Experience from "./components/experience/Experience.tsx";
 import App from "./App.tsx";
 
 const COORDS = { longitude: 3.7148832892004333, latitude: 51.06450815935309 };
@@ -19,14 +19,14 @@ createRoot(document.getElementById("root")!).render(
     <Leva hidden={isDev} />
     <App />
     <Map
-      initialViewState={{ ...COORDS, zoom: 18, pitch: 60 }}
+      initialViewState={{ ...COORDS, zoom: 30, pitch: 60 }}
       mapStyle={`https://api.maptiler.com/maps/base-v4/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`}
       style={{ width: "100vw", height: "100vh" }}
     >
       <Buildings />
 
       <Canvas {...COORDS}>
-        <Experience isDev={isDev} />
+        <Experience />
       </Canvas>
     </Map>
   </StrictMode>,
