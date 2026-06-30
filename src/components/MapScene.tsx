@@ -1,40 +1,34 @@
-import { button, LevaPanel, useControls, useCreateStore } from "leva";
+import { useControls } from "leva";
 import { Map } from "react-map-gl/maplibre";
 import { Canvas } from "react-three-map/maplibre";
-import { useState } from "react";
 
 import Buildings from "./Buildings.tsx";
-import Experience from "./experience/Experience.tsx";
+import Experience from "./Experience.tsx";
 
 function MapScene() {
-  const locationStore = useCreateStore();
-
-  const [coords, setCoords] = useState({
-    longitude: 3.714381547403736,
-    latitude: 51.064053600278754,
+  const intial = {
+    longitude: 3.7144315474037364,
+    latitude: 51.063943600278726,
+  };
+  const { longitude, latitude } = useControls("Map", {
+    longitude: { value: intial.longitude, step: 0.00001 },
+    latitude: { value: intial.latitude, step: 0.00001 },
   });
 
-  const { longitude, latitude } = useControls(
-    "Map",
-    {
-      longitude: { value: coords.longitude, step: 1e-7 },
-      latitude: { value: coords.latitude, step: 1e-7 },
-
-      apply: button(() => {
-        console.log("New location applied: ", { longitude, latitude });
-        setCoords({ longitude, latitude });
-      }),
-    },
-    { store: locationStore },
-  );
   return (
     <>
-      <LevaPanel store={locationStore} />
-
       <Map
+        minPitch={0}
+        maxPitch={80}
+        minZoom={0}
+        maxZoom={25}
+        scrollZoom={true}
+        dragPan={true}
+        touchZoomRotate={true}
+        keyboard={true}
         initialViewState={{
-          longitude: longitude,
-          latitude: latitude,
+          longitude,
+          latitude,
           zoom: 50,
         }}
         mapStyle={`https://api.maptiler.com/maps/base-v4/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`}
