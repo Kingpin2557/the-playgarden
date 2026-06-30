@@ -2,17 +2,15 @@ import { useControls } from "leva";
 import { Map } from "react-map-gl/maplibre";
 import { Canvas } from "react-three-map/maplibre";
 
+import { COORDS } from "../coords.ts";
+
 import Buildings from "./Buildings.tsx";
 import Experience from "./Experience.tsx";
 
 function MapScene() {
-  const intial = {
-    longitude: 3.7144315474037364,
-    latitude: 51.063943600278726,
-  };
   const { longitude, latitude } = useControls("Map", {
-    longitude: { value: intial.longitude, step: 0.00001 },
-    latitude: { value: intial.latitude, step: 0.00001 },
+    longitude: { value: COORDS.longitude, step: 0.00001 },
+    latitude: { value: COORDS.latitude, step: 0.00001 },
   });
 
   return (

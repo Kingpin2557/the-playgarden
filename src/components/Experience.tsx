@@ -1,5 +1,6 @@
 import PlantInstances from "./Grassfield/PlantInstances";
 import Goals from "./goals/Goals";
+import WeatherParticles from "./weather/WeatherParticles";
 
 function Experience() {
   const MY_NATURE = [
@@ -26,6 +27,7 @@ function Experience() {
       <directionalLight position={[10, 20, 10]} intensity={2} />
       <Goals />
       <PlantInstances models={MY_NATURE} />
+      <WeatherParticles />
     </>
   );
 }
