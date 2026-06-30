@@ -9,8 +9,8 @@ const UP = new THREE.Vector3(0, 0, -1);
 
 function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
   let mesh: THREE.Mesh | null = null;
-  root.traverse((o) => {
-    const m = o as THREE.Mesh;
+  root.traverse((object) => {
+    const m = object as THREE.Mesh;
     if (!mesh && m.isMesh) mesh = m;
   });
   return mesh;
@@ -41,7 +41,6 @@ function PlantLayer({
 
   if (!model) return null;
 
-  // The model's own exported scale (its baked node transform) — no manual number.
   const modelScale = new THREE.Vector3();
   model.updateWorldMatrix(true, false);
   model.getWorldScale(modelScale);
