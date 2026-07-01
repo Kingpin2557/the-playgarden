@@ -6,6 +6,7 @@ import { COORDS } from "../coords.ts";
 
 import Buildings from "./Buildings.tsx";
 import Experience from "./Experience.tsx";
+import DayNightCycle from "./sky - vibecoded/DayNightCycle.tsx";
 
 function MapScene() {
   const { longitude, latitude } = useControls("Map", {
@@ -33,6 +34,7 @@ function MapScene() {
         style={{ width: "100vw", height: "100vh" }}
       >
         <Buildings />
+        <DayNightCycle />
         <Canvas longitude={longitude} latitude={latitude}>
           <Experience />
         </Canvas>

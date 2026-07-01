@@ -1,10 +1,9 @@
 import "./App.css";
 
-import { COORDS } from "./coords";
-import { useWeather } from "./components/weather/useWeather";
+import { useWeatherStore } from "./store/weatherStore";
 
 function App() {
-  const weather = useWeather(COORDS.latitude, COORDS.longitude);
+  const weather = useWeatherStore((state) => state.weather);
 
   return (
     <div
