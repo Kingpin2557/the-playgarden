@@ -10,19 +10,19 @@ function Experience() {
 
   const MY_NATURE = [
     {
-      url: "/models/plant.glb",
+      url: "/scatter/plant.glb",
       nodeName: "plants",
-      count: 10000,
+      count: 500000,
     },
     {
-      url: "/models/rock.glb",
+      url: "/scatter/rock.glb",
       nodeName: "rocks",
       count: 500,
     },
     {
-      url: "/models/tree.glb",
+      url: "/scatter/tree.glb",
       nodeName: "trees",
-      count: 500,
+      count: 100,
     },
   ];
 
