@@ -15,7 +15,7 @@ function Goals() {
   const { position, rotation } = useControls("Goal", {
     position: {
       value: { x: initPosition.long, y: initPosition.lat },
-      step: 1,
+      step: 3,
       joystick: "invertY",
     },
     rotation: { value: initRotation, min: 0, max: 360, step: 1 },
