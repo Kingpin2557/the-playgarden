@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
-import PlantLayer from "./PlantLayer";
+import PlantLayer from "../PlantLayer/PlantLayer";
 
 export interface PlantConfig {
   url: string;

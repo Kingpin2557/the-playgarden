@@ -1,6 +1,4 @@
-import "./App.css";
-
-import { useWeatherStore } from "./store/weatherStore";
+import { useWeatherStore } from "../store/weatherStore";
 
 function App() {
   const weather = useWeatherStore((state) => state.weather);

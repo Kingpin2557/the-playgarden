@@ -1,15 +1,16 @@
 import { create } from "zustand";
 
-import type { Weather } from "../components/weather -  vibecoded/weatherApi";
+import { fetchWeather, type Weather } from "../lib/weatherApi";
 
-// One shared, live weather value for the whole app. WeatherUpdater writes it;
-// the particles, clouds, lightning and the badge all read it.
 interface WeatherState {
   weather: Weather | null;
-  setWeather: (weather: Weather | null) => void;
+  refresh: (latitude: number, longitude: number) => Promise<void>;
 }
 
 export const useWeatherStore = create<WeatherState>((set) => ({
   weather: null,
-  setWeather: (weather) => set({ weather }),
+  refresh: async (latitude, longitude) => {
+    const weather = await fetchWeather(latitude, longitude);
+    set({ weather });
+  },
 }));

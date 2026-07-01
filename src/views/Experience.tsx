@@ -1,11 +1,13 @@
-import PlantInstances from "./Grassfield/PlantInstances";
-import Goals from "./goals/Goals";
-import WeatherUpdater from "./weather -  vibecoded/WeatherUpdater";
-import WeatherParticles from "./weather -  vibecoded/WeatherParticles";
-import Clouds from "./weather -  vibecoded/Clouds";
-import Lightning from "./weather -  vibecoded/Lightning";
+import PlantInstances from "../components/PlantInstances/PlantInstances";
+import Goals from "../components/Goals/Goals";
+import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
+import Clouds from "../components/Clouds/Clouds";
+import Lightning from "../components/Lightning/Lightning";
+import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
 
 function Experience() {
+  useWeatherUpdater();
+
   const MY_NATURE = [
     {
       url: "/models/plant.glb",
@@ -30,7 +32,6 @@ function Experience() {
       <directionalLight position={[10, 20, 10]} intensity={2} />
       <Goals />
       <PlantInstances models={MY_NATURE} />
-      <WeatherUpdater />
       <WeatherParticles />
       <Clouds />
       <Lightning />

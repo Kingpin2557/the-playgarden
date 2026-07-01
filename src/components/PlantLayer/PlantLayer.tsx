@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from "react";
 import * as THREE from "three";
 import { useGLTF, Sampler } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
-import type { PlantConfig } from "./PlantInstances";
+import type { PlantConfig } from "../PlantInstances/PlantInstances";
 
 // Models come in Blender Z-up (their up axis is +Z).
 const UP = new THREE.Vector3(0, 0, -1);
