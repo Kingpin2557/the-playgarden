@@ -1,14 +1,14 @@
-import PlantInstances from "../components/PlantInstances/PlantInstances";
-import Goals from "../components/Goals/Goals";
-import Swing from "../components/Swing/Swing";
-import Climbhouse from "../components/Climbhouse/Climbhouse";
-import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
-import Clouds from "../components/Clouds/Clouds";
-import Lightning from "../components/Lightning/Lightning";
+import PlantInstances from "../components/plantinstances/PlantInstances";
+import Goals from "../components/goals/Goals";
+import Swing from "../components/wing/Swing";
+import Climbhouse from "../components/climbhouse/Climbhouse";
+import WeatherParticles from "../components/eatherparticles/WeatherParticles";
+import Clouds from "../components/clouds/Clouds";
+import Lightning from "../components/lightning/Lightning";
 
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
 import { useFocusPlaneCenter } from "../hooks/useFocusPlaneCenter";
-import Whip from "../components/Whip/Whip";
+import Whip from "../components/whip/Whip";
 
 function Experience() {
   useWeatherUpdater();

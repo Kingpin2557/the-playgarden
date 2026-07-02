@@ -11,8 +11,18 @@ const MAX_PARTICLES = 3000;
 const MIN_HALF_EXTENT = 20;
 const MAX_HALF_EXTENT = 400;
 
-const RAIN = { fallSpeed: 40, scale: [0.06, 1.4, 0.06], color: "#dfe8ff", opacity: 0.9 };
-const SNOW = { fallSpeed: 8, scale: [0.25, 0.25, 0.25], color: "#ffffff", opacity: 1 };
+const RAIN = {
+  fallSpeed: 40,
+  scale: [0.06, 1.4, 0.06],
+  color: "#dfe8ff",
+  opacity: 0.9,
+};
+const SNOW = {
+  fallSpeed: 8,
+  scale: [0.25, 0.25, 0.25],
+  color: "#ffffff",
+  opacity: 1,
+};
 
 const particleTransform = new THREE.Object3D();
 
@@ -83,7 +93,8 @@ function WeatherParticles() {
 
     const instancedMesh = instancedMeshRef.current;
     for (let index = 0; index < activeCount; index++) {
-      positions[index * 3 + 1] -= appearance.fallSpeed * fallSpeeds[index] * deltaSeconds;
+      positions[index * 3 + 1] -=
+        appearance.fallSpeed * fallSpeeds[index] * deltaSeconds;
       positions[index * 3] += windDriftX * deltaSeconds;
       positions[index * 3 + 2] += windDriftZ * deltaSeconds;
 
@@ -94,7 +105,9 @@ function WeatherParticles() {
       if (belowGround || outsideView) {
         positions[index * 3] = (Math.random() - 0.5) * 2 * halfX;
         positions[index * 3 + 2] = (Math.random() - 0.5) * 2 * halfZ;
-        positions[index * 3 + 1] = belowGround ? height : Math.random() * height;
+        positions[index * 3 + 1] = belowGround
+          ? height
+          : Math.random() * height;
       }
 
       particleTransform.position.set(
