@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import PlantLayer from "../PlantLayer/PlantLayer";
+import PlantLayer from "../plantlayer/PlantLayer";
 import { setGround } from "../../lib/ground";
 
 export interface PlantConfig {
