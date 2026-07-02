@@ -1,4 +1,4 @@
-import PlantInstances from "../components/plantinstances/PlantInstances";
+import PlantInstances from "../components/PlantInstances/PlantInstances";
 import Goals from "../components/goals/Goals";
 import Swing from "../components/wing/Swing";
 import Climbhouse from "../components/climbhouse/Climbhouse";
