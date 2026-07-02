@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .env
 export_scatter.py
+
+.vercel
