@@ -2,7 +2,7 @@ import PlantInstances from "../components/plantinstances/PlantInstances";
 import Goals from "../components/goals/Goals";
 import Swing from "../components/wing/Swing";
 import Climbhouse from "../components/climbhouse/Climbhouse";
-import WeatherParticles from "../components/eatherparticles/WeatherParticles";
+import WeatherParticles from "../components/weatherparticles/WeatherParticles";
 import Clouds from "../components/clouds/Clouds";
 import Lightning from "../components/lightning/Lightning";
 
