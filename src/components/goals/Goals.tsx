@@ -5,7 +5,7 @@ import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
 function Goals() {
   const { scene } = useGLTF("/models/goals.glb");
-  const { ref, label } = usePointOfInterest("Goals");
+  const { ref, label, onModelClick } = usePointOfInterest("Goals");
 
   const { position, rotation } = useControls("Goal", {
     position: {
@@ -21,6 +21,7 @@ function Goals() {
       <primitive
         object={scene}
         ref={ref}
+        onClick={onModelClick}
         rotation={[0, (rotation * Math.PI) / 180, 0]}
       />
       {label}

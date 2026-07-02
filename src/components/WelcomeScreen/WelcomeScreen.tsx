@@ -31,10 +31,27 @@ function WelcomeScreen() {
         <label className="welcome__audio">
           <input
             type="checkbox"
+            className="welcome__checkbox"
             checked={audioAllowed}
             onChange={(event) => setAudioAllowed(event.target.checked)}
           />
-          Speel achtergrondgeluid af
+          <span className="welcome__checkbox-box">
+            <svg
+              className="welcome__checkbox-tick"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 13l4 4L19 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <span className="welcome__audio-text">Speel achtergrondgeluid af</span>
         </label>
 
         <button

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { useAppStore } from "../store/appStore";
+import { createAudioLoop } from "../lib/audioLoop";
 
 const MUSIC_SOURCE = "/audio/music.mp3";
 const MUSIC_VOLUME = 0.15;
@@ -8,22 +9,20 @@ const MUSIC_VOLUME = 0.15;
 export function useBackgroundMusic() {
   const entered = useAppStore((state) => state.entered);
   const audioEnabled = useAppStore((state) => state.audioEnabled);
-  const playerRef = useRef<HTMLAudioElement | null>(null);
+  const loopRef = useRef<ReturnType<typeof createAudioLoop> | null>(null);
 
   const shouldPlay = entered && audioEnabled;
 
   useEffect(() => {
-    if (!playerRef.current) {
-      playerRef.current = new Audio(MUSIC_SOURCE);
-      playerRef.current.loop = true;
-      playerRef.current.volume = MUSIC_VOLUME;
+    if (!loopRef.current) {
+      loopRef.current = createAudioLoop(MUSIC_VOLUME);
     }
-    const player = playerRef.current;
+    const loop = loopRef.current;
 
     if (shouldPlay) {
-      player.play().catch(() => {});
+      loop.play(MUSIC_SOURCE);
     } else {
-      player.pause();
+      loop.stop();
     }
   }, [shouldPlay]);
 }

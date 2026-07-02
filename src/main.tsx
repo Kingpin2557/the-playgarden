@@ -13,6 +13,7 @@ import { useCameraFocus } from "./hooks/useCameraFocus";
 import { usePoiStore } from "./store/poiStore";
 import Buildings from "./components/Buildings/Buildings";
 import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
+import LightningFlash from "./components/LightningFlash/LightningFlash";
 import { useWeatherAudio } from "./hooks/useWeatherAudio";
 import { useBackgroundMusic } from "./hooks/useBackgroundMusic";
 import App from "./views/App";
@@ -56,6 +57,7 @@ function Root() {
   return (
     <>
       <WelcomeScreen />
+      <LightningFlash />
       <Leva hidden={hideLeva} />
       <App />
       <Map

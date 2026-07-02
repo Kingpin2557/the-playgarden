@@ -5,7 +5,7 @@ import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
 function Whip() {
   const { scene } = useGLTF("/models/whip.glb");
-  const { ref, label } = usePointOfInterest("Whip");
+  const { ref, label, onModelClick } = usePointOfInterest("Whip");
 
   const { position, rotation } = useControls("Whip", {
     position: {
@@ -21,6 +21,7 @@ function Whip() {
       <primitive
         object={scene}
         ref={ref}
+        onClick={onModelClick}
         rotation={[0, (rotation * Math.PI) / 180, 0]}
       />
       {label}

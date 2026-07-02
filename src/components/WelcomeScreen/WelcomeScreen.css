@@ -5,8 +5,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  padding: var(--space-4);
   color: var(--text);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(31, 185, 112, 0.3), transparent 45%),
+    radial-gradient(circle at 86% 14%, rgba(255, 157, 67, 0.24), transparent 42%),
+    radial-gradient(circle at 78% 88%, rgba(31, 185, 112, 0.24), transparent 46%),
+    radial-gradient(circle at 20% 90%, rgba(255, 157, 67, 0.18), transparent 42%),
+    var(--bg);
 }
 
 .welcome__content {
@@ -14,9 +20,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
-  text-align: center;
-  padding: var(--space-4);
   width: min(90vw, 420px);
+  padding: var(--space-4);
+  text-align: center;
+  background: var(--panel-bg);
+  border: var(--border-width) solid var(--panel-border);
+  border-radius: calc(var(--radius) + var(--space-2));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(var(--blur));
 }
 
 .welcome__title {
@@ -25,12 +36,17 @@
   font-size: var(--font-welcome);
   font-weight: var(--weight-bold);
   line-height: var(--leading);
-  color: var(--text-h);
+  letter-spacing: -0.5px;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .welcome__subtitle {
   margin: 0;
   font-size: var(--font-md);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
@@ -38,45 +54,103 @@
   width: 100%;
   height: var(--space-2);
   border-radius: var(--radius-pill);
-  background: var(--border);
+  background: var(--accent-bg);
   overflow: hidden;
 }
 
 .welcome__bar-fill {
   height: 100%;
   border-radius: var(--radius-pill);
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   transition: width 200ms ease;
 }
 
 .welcome__progress {
   font-size: var(--font-sm);
+  font-weight: var(--weight-bold);
   color: var(--text);
 }
 
 .welcome__audio {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   font-size: var(--font-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-h);
   cursor: pointer;
+}
+
+.welcome__checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.welcome__checkbox-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--accent-border);
+  background: var(--bg);
+  transition:
+    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.welcome__checkbox-tick {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 150ms ease,
+    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.welcome__checkbox:checked + .welcome__checkbox-box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.welcome__checkbox:checked + .welcome__checkbox-box .welcome__checkbox-tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.welcome__audio:hover .welcome__checkbox-box {
+  transform: scale(1.08);
+}
+
+.welcome__checkbox:focus-visible + .welcome__checkbox-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .welcome__enter {
   padding: var(--space-3) var(--space-4);
+  border: none;
   border-radius: var(--radius-pill);
-  border: var(--border-width) solid var(--accent-border);
-  background: var(--accent-bg);
-  color: var(--text-h);
-  font: var(--weight-semibold) var(--font-md) var(--sans);
+  background: var(--accent);
+  color: #fff;
+  font: var(--weight-semibold) var(--font-md) var(--heading);
   cursor: pointer;
+  box-shadow: var(--shadow);
   transition:
+    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
     background 150ms ease,
     opacity 150ms ease;
 }
 
 .welcome__enter:hover:not(:disabled) {
-  background: var(--accent);
+  transform: translateY(-2px) scale(1.03);
+  background: var(--accent-strong);
 }
 
 .welcome__enter:disabled {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { vector3ToCoords } from "react-three-map/maplibre";
 
 import "./poiLabel.css";
@@ -81,6 +81,12 @@ export function usePointOfInterest(name: string) {
     });
   };
 
+  // Clicking the model must not bubble to the Canvas onPointerMissed,
+  // so only the label can return to the global view.
+  const onModelClick = (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+  };
+
   const label = (
     <Html position={labelPosition} center>
       <button
@@ -92,5 +98,5 @@ export function usePointOfInterest(name: string) {
     </Html>
   );
 
-  return { ref, label };
+  return { ref, label, onModelClick };
 }

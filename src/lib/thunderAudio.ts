@@ -1,4 +1,5 @@
 import { useAppStore } from "../store/appStore";
+import { playOneShot } from "./audioLoop";
 
 const THUNDER_SOURCES = ["/audio/thunder.mp3", "/audio/thunder_strike.mp3"];
 const THUNDER_VOLUME = 0.7;
@@ -13,8 +14,6 @@ export function playThunderClap() {
     THUNDER_SOURCES[Math.floor(Math.random() * THUNDER_SOURCES.length)];
   const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
   window.setTimeout(() => {
-    const clap = new Audio(source);
-    clap.volume = THUNDER_VOLUME;
-    clap.play().catch(() => {});
+    playOneShot(source, THUNDER_VOLUME);
   }, delay);
 }

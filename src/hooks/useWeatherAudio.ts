@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useWeatherStore, type WeatherMode } from "../store/weatherStore";
 import { useAppStore } from "../store/appStore";
 import type { Weather } from "../lib/weatherApi";
+import { createAudioLoop } from "../lib/audioLoop";
 
 const AMBIENT_VOLUME = 0.5;
 
@@ -30,27 +31,20 @@ export function useWeatherAudio() {
   const mode = useWeatherStore((state) => state.mode);
   const entered = useAppStore((state) => state.entered);
   const audioEnabled = useAppStore((state) => state.audioEnabled);
-  const playerRef = useRef<HTMLAudioElement | null>(null);
+  const loopRef = useRef<ReturnType<typeof createAudioLoop> | null>(null);
 
   const ambient = entered && audioEnabled ? pickAmbient(mode, weather) : null;
 
   useEffect(() => {
-    if (!playerRef.current) {
-      playerRef.current = new Audio();
-      playerRef.current.loop = true;
-      playerRef.current.volume = AMBIENT_VOLUME;
+    if (!loopRef.current) {
+      loopRef.current = createAudioLoop(AMBIENT_VOLUME);
     }
-    const player = playerRef.current;
+    const loop = loopRef.current;
 
     if (!ambient) {
-      player.pause();
+      loop.stop();
       return;
     }
-
-    const nextSource = AMBIENT_SOURCES[ambient];
-    if (!player.src.endsWith(nextSource)) {
-      player.src = nextSource;
-    }
-    player.play().catch(() => {});
+    loop.play(AMBIENT_SOURCES[ambient]);
   }, [ambient]);
 }

@@ -1,0 +1,30 @@
+.lightning-flash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-flash);
+  pointer-events: none;
+  background: var(--flash-color);
+  opacity: 0;
+}
+
+.lightning-flash--active {
+  animation: lightning-flash-fade var(--flash-duration) ease-out;
+}
+
+@keyframes lightning-flash-fade {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  20% {
+    opacity: 0.1;
+  }
+  32% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}

@@ -5,7 +5,7 @@ import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
 function Climbhouse() {
   const { scene } = useGLTF("/models/swing.glb");
-  const { ref, label } = usePointOfInterest("Swing");
+  const { ref, label, onModelClick } = usePointOfInterest("Swing");
 
   const { position, rotation } = useControls("Swing", {
     position: {
@@ -21,6 +21,7 @@ function Climbhouse() {
       <primitive
         object={scene}
         ref={ref}
+        onClick={onModelClick}
         rotation={[0, (rotation * Math.PI) / 180, 0]}
       />
       {label}

@@ -1,18 +1,23 @@
 :root {
-    --text: #6b6375;
-    --text-h: #08060d;
-    --bg: #fff;
-    --border: #e5e4e7;
-    --code-bg: #f4f3ec;
-    --accent: #aa3bff;
-    --accent-bg: rgba(170, 59, 255, 0.1);
-    --accent-border: rgba(170, 59, 255, 0.5);
-    --social-bg: rgba(244, 243, 236, 0.5);
+    --text: #5f6d64;
+    --text-h: #14261b;
+    --bg: #ffffff;
+    --border: #e6ece7;
+    --code-bg: #f1f5f1;
+    --accent: #1fb970;
+    --accent-strong: #149a5b;
+    --accent-2: #ff9d43;
+    --accent-bg: rgba(31, 185, 112, 0.12);
+    --accent-border: rgba(31, 185, 112, 0.45);
+    --social-bg: rgba(241, 245, 241, 0.5);
+    --panel-bg: rgba(255, 255, 255, 0.82);
+    --panel-border: rgba(255, 255, 255, 0.7);
     --shadow:
-        rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+        0 12px 30px -8px rgba(20, 38, 27, 0.22),
+        0 4px 10px -4px rgba(31, 185, 112, 0.18);
 
-    --sans: system-ui, "Segoe UI", Roboto, sans-serif;
-    --heading: system-ui, "Segoe UI", Roboto, sans-serif;
+    --sans: "Nunito", system-ui, sans-serif;
+    --heading: "Fredoka", system-ui, sans-serif;
     --mono: ui-monospace, Consolas, monospace;
 
     --space-1: 4px;
@@ -20,7 +25,8 @@
     --space-3: 12px;
     --space-4: 16px;
 
-    --radius: 12px;
+    --radius: 20px;
+    --radius-sm: 12px;
     --radius-pill: 999px;
     --border-width: 1px;
 
@@ -41,7 +47,11 @@
     --weight-bold: 700;
 
     --z-overlay: 10;
+    --z-flash: 9000;
     --z-welcome: 10000;
+
+    --flash-color: #eaf2ff;
+    --flash-duration: 600ms;
 
     font: 18px/145% var(--sans);
     letter-spacing: 0.18px;
@@ -60,18 +70,22 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --text: #9ca3af;
-        --text-h: #f3f4f6;
-        --bg: #16171d;
-        --border: #2e303a;
-        --code-bg: #1f2028;
-        --accent: #c084fc;
-        --accent-bg: rgba(192, 132, 252, 0.15);
-        --accent-border: rgba(192, 132, 252, 0.5);
-        --social-bg: rgba(47, 48, 58, 0.5);
+        --text: #a3b0a8;
+        --text-h: #eef6f0;
+        --bg: #131a16;
+        --border: #273028;
+        --code-bg: #1b241e;
+        --accent: #3ddc8a;
+        --accent-strong: #2bc477;
+        --accent-2: #ffb366;
+        --accent-bg: rgba(61, 220, 138, 0.16);
+        --accent-border: rgba(61, 220, 138, 0.5);
+        --social-bg: rgba(39, 48, 40, 0.5);
+        --panel-bg: rgba(23, 31, 26, 0.8);
+        --panel-border: rgba(255, 255, 255, 0.08);
         --shadow:
-            rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
-            rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+            0 14px 34px -8px rgba(0, 0, 0, 0.55),
+            0 4px 10px -4px rgba(0, 0, 0, 0.4);
     }
 
     #social .button-icon {
@@ -86,13 +100,13 @@ body {
 h1,
 h2 {
     font-family: var(--heading);
-    font-weight: 500;
+    font-weight: var(--weight-semibold);
     color: var(--text-h);
 }
 
 h1 {
     font-size: 56px;
-    letter-spacing: -1.68px;
+    letter-spacing: -0.5px;
     margin: 32px 0;
     @media (max-width: 1024px) {
         font-size: 36px;
@@ -102,7 +116,7 @@ h1 {
 h2 {
     font-size: 24px;
     line-height: 118%;
-    letter-spacing: -0.24px;
+    letter-spacing: 0;
     margin: 0 0 8px;
     @media (max-width: 1024px) {
         font-size: 20px;

@@ -29,6 +29,7 @@ function Lightning() {
       secondsUntilNextStrike.current -= deltaSeconds;
       if (secondsUntilNextStrike.current <= 0) {
         flashBrightness.current = FLASH_POWER * (0.6 + Math.random() * 0.4);
+        useWeatherStore.getState().strike();
         playThunderClap();
         secondsUntilNextStrike.current =
           MIN_GAP_SECONDS + Math.random() * (MAX_GAP_SECONDS - MIN_GAP_SECONDS);
