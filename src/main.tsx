@@ -33,6 +33,9 @@ function Root() {
   useDayNightCycle(mapRef);
   useCameraFocus(mapRef); // flies to a PoI when one is focused
 
+  // While focused on a PoI the camera is fixed (no dragging/orbiting/zooming).
+  const isFocused = usePoiStore((state) => state.focus !== null);
+
   return (
     <>
       <Leva hidden={isDev} />
@@ -43,10 +46,11 @@ function Root() {
         maxPitch={80}
         minZoom={0}
         maxZoom={25}
-        scrollZoom={true}
+        scrollZoom={!isFocused}
         dragPan={false}
-        dragRotate={true}
-        touchZoomRotate={true}
+        dragRotate={!isFocused}
+        touchZoomRotate={!isFocused}
+        doubleClickZoom={!isFocused}
         keyboard={false}
         initialViewState={{
           longitude,

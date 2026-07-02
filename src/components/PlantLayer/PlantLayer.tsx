@@ -108,8 +108,9 @@ function PlantLayer({
     instancedMesh.count = config.count;
     instancedMesh.instanceMatrix.needsUpdate = true;
     map.triggerRepaint();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, surface, config.nodeName, config.count, seed]);
+  }, [model, surface, config.nodeName, config.count, , seed]);
 
   if (!model) return null;
 

@@ -8,6 +8,7 @@ export interface PlantConfig {
   url: string;
   nodeName: string;
   count: number;
+  occludes?: boolean;
 }
 
 interface InstancesProps {
@@ -21,7 +22,7 @@ function PlantInstances({ models }: InstancesProps) {
 
   // Fixed scatter seed — same layout every reload. Change it to reshuffle.
   const { seed } = useControls("Scatter", {
-    seed: { value: 1, min: 0, max: 9999, step: 1 },
+    seed: { value: 4175, min: 0, max: 9999, step: 1 },
   });
 
   // Bake the plane's own exported scale into its geometry (like the models use

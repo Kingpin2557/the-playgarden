@@ -3,13 +3,13 @@ import { useControls } from "leva";
 
 import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
-function Goals() {
-  const { scene } = useGLTF("/models/goals.glb");
-  const { ref, label } = usePointOfInterest("Goals");
+function Whip() {
+  const { scene } = useGLTF("/models/whip.glb");
+  const { ref, label } = usePointOfInterest("whip");
 
-  const { position, rotation } = useControls("Goal", {
+  const { position, rotation } = useControls("Whip", {
     position: {
-      value: { x: -3.9991455078125, y: -44.99993896484375 },
+      value: { x: -35.9991455078125, y: -85.99993896484375 },
       step: 1,
       joystick: "invertY",
     },
@@ -28,4 +28,4 @@ function Goals() {
   );
 }
 
-export default Goals;
+export default Whip;

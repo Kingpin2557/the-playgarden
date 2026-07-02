@@ -3,9 +3,6 @@ import { create } from "zustand";
 export interface FocusTarget {
   longitude: number;
   latitude: number;
-  zoom: number;
-  pitch: number;
-  bearing: number;
 }
 
 interface PoiStore {

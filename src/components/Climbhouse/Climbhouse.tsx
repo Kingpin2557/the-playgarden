@@ -3,13 +3,13 @@ import { useControls } from "leva";
 
 import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
-function Goals() {
-  const { scene } = useGLTF("/models/goals.glb");
-  const { ref, label } = usePointOfInterest("Goals");
+function Climbhouse() {
+  const { scene } = useGLTF("/models/climbhouse.glb");
+  const { ref, label } = usePointOfInterest("climbhouse");
 
-  const { position, rotation } = useControls("Goal", {
+  const { position, rotation } = useControls("Climbhouse", {
     position: {
-      value: { x: -3.9991455078125, y: -44.99993896484375 },
+      value: { x: 8.0008544921875, y: -110.99993896484375 },
       step: 1,
       joystick: "invertY",
     },
@@ -28,4 +28,4 @@ function Goals() {
   );
 }
 
-export default Goals;
+export default Climbhouse;

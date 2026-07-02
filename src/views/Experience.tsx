@@ -1,10 +1,14 @@
 import PlantInstances from "../components/PlantInstances/PlantInstances";
 import Goals from "../components/Goals/Goals";
+import Swing from "../components/Swing/Swing";
+import Climbhouse from "../components/Climbhouse/Climbhouse";
 import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
+
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
 import { useFocusPlaneCenter } from "../hooks/useFocusPlaneCenter";
+import Whip from "../components/Whip/Whip";
 
 function Experience() {
   useWeatherUpdater();
@@ -17,14 +21,10 @@ function Experience() {
       count: 500000,
     },
     {
-      url: "/scatter/rock.glb",
-      nodeName: "rocks",
-      count: 500,
-    },
-    {
       url: "/scatter/tree.glb",
       nodeName: "trees",
-      count: 100,
+      count: 50,
+      occludes: true,
     },
   ];
 
@@ -32,9 +32,12 @@ function Experience() {
     <>
       <ambientLight intensity={Math.PI} />
       <directionalLight position={[10, 20, 10]} intensity={2} />
-      <Goals />
       <PlantInstances models={MY_NATURE} />
       <WeatherParticles />
+      <Goals />
+      <Climbhouse />
+      <Swing />
+      <Whip />
       <Clouds />
       <Lightning />
     </>

@@ -1,49 +1,86 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
+import type { Map } from "maplibre-gl";
 import type { MapRef } from "react-map-gl/maplibre";
+import { useControls } from "leva";
 import gsap from "gsap";
 
-import { usePoiStore, type FocusTarget } from "../store/poiStore";
+import { usePoiStore } from "../store/poiStore";
+
+interface CameraView {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+}
+
+function readCamera(map: Map): CameraView {
+  const center = map.getCenter();
+  return {
+    longitude: center.lng,
+    latitude: center.lat,
+    zoom: map.getZoom(),
+    pitch: map.getPitch(),
+    bearing: map.getBearing(),
+  };
+}
+
+function animateCamera(
+  map: Map,
+  view: CameraView,
+  tween: RefObject<gsap.core.Tween | null>,
+) {
+  const proxy = readCamera(map);
+  tween.current?.kill();
+  tween.current = gsap.to(proxy, {
+    ...view,
+    duration: 1.2,
+    ease: "power2.inOut",
+    onUpdate: () =>
+      map.jumpTo({
+        center: [proxy.longitude, proxy.latitude],
+        zoom: proxy.zoom,
+        pitch: proxy.pitch,
+        bearing: proxy.bearing,
+      }),
+  });
+}
 
 export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
   const focus = usePoiStore((state) => state.focus);
-  const homeView = useRef<FocusTarget | null>(null);
+
+  const { zoom, pitch, bearing } = useControls("Focus", {
+    zoom: { value: 22, min: 0, max: 25, step: 0.5 },
+    pitch: { value: 72, min: 0, max: 80, step: 1 },
+    bearing: { value: 198, min: 0, max: 360, step: 1 },
+  });
+
+  const framing = useRef({ zoom, pitch, bearing });
+  framing.current = { zoom, pitch, bearing };
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+
+  const homeView = useRef<CameraView | null>(null);
   const tween = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
+    if (focus && !homeView.current) homeView.current = readCamera(map);
 
-    const readCamera = (): FocusTarget => ({
-      longitude: map.getCenter().lng,
-      latitude: map.getCenter().lat,
-      zoom: map.getZoom(),
-      pitch: map.getPitch(),
-      bearing: map.getBearing(),
-    });
+    const view = focus ? { ...focus, ...framing.current } : homeView.current;
+    if (!view) return;
 
-    if (focus && !homeView.current) homeView.current = readCamera();
-
-    const target = focus ?? homeView.current;
-    if (!target) return;
-
-    const proxy = readCamera();
-    tween.current?.kill();
-    tween.current = gsap.to(proxy, {
-      ...target,
-      duration: 1.2,
-      ease: "power2.inOut",
-      onUpdate: () =>
-        map.jumpTo({
-          center: [proxy.longitude, proxy.latitude],
-          zoom: proxy.zoom,
-          pitch: proxy.pitch,
-          bearing: proxy.bearing,
-        }),
-    });
-
+    animateCamera(map, view, tween);
     return () => {
       tween.current?.kill();
     };
   }, [focus, mapRef]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !focusRef.current) return;
+    animateCamera(map, { ...focusRef.current, zoom, pitch, bearing }, tween);
+  }, [zoom, pitch, bearing, mapRef]);
 }
