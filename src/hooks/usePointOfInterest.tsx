@@ -1,13 +1,21 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import { vector3ToCoords } from "react-three-map/maplibre";
 
 import "./poiLabel.css";
 import { COORDS } from "../coords";
 import { usePoiStore } from "../store/poiStore";
+import { getGround } from "../lib/ground";
 
 const LABEL_MARGIN = 1;
+const RAY_HEIGHT = 1000;
+
+const raycaster = new THREE.Raycaster();
+const DOWN = new THREE.Vector3(0, -1, 0);
+const rayOrigin = new THREE.Vector3();
+const modelBox = new THREE.Box3();
 
 function boundingBoxCenter(object: THREE.Object3D) {
   object.updateWorldMatrix(true, true);
@@ -38,6 +46,26 @@ export function usePointOfInterest(name: string) {
     box.getCenter(center);
     setLabelPosition([center.x, box.max.y + LABEL_MARGIN, center.z]);
   }, []);
+
+  useFrame(() => {
+    const model = ref.current;
+    const ground = getGround();
+    if (!model?.parent || !ground) return;
+
+    const group = model.parent;
+    group.updateWorldMatrix(true, false);
+    group.getWorldPosition(rayOrigin);
+    rayOrigin.y = RAY_HEIGHT;
+    raycaster.set(rayOrigin, DOWN);
+
+    const hits = raycaster.intersectObject(ground, false);
+    if (hits.length === 0) return;
+
+    model.updateWorldMatrix(true, true);
+    modelBox.setFromObject(model);
+    // lift/lower the group so the model's lowest point rests on the ground
+    group.position.y -= modelBox.min.y - hits[0].point.y;
+  });
 
   const toggle = (event: MouseEvent) => {
     event.stopPropagation();

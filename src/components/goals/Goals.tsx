@@ -9,11 +9,11 @@ function Goals() {
 
   const { position, rotation } = useControls("Goal", {
     position: {
-      value: { x: -3.9991455078125, y: -44.99993896484375 },
+      value: { x: -25.9991455078125, y: -42.99993896484375 },
       step: 1,
       joystick: "invertY",
     },
-    rotation: { value: 38, min: 0, max: 360, step: 1 },
+    rotation: { value: 144, min: 0, max: 360, step: 1 },
   });
 
   return (

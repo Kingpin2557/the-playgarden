@@ -1,0 +1,85 @@
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-welcome);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.welcome__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  padding: var(--space-4);
+  width: min(90vw, 420px);
+}
+
+.welcome__title {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: var(--font-welcome);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading);
+  color: var(--text-h);
+}
+
+.welcome__subtitle {
+  margin: 0;
+  font-size: var(--font-md);
+  color: var(--text);
+}
+
+.welcome__bar {
+  width: 100%;
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.welcome__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: width 200ms ease;
+}
+
+.welcome__progress {
+  font-size: var(--font-sm);
+  color: var(--text);
+}
+
+.welcome__audio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+
+.welcome__enter {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font: var(--weight-semibold) var(--font-md) var(--sans);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    opacity 150ms ease;
+}
+
+.welcome__enter:hover:not(:disabled) {
+  background: var(--accent);
+}
+
+.welcome__enter:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

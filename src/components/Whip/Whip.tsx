@@ -5,7 +5,7 @@ import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
 function Whip() {
   const { scene } = useGLTF("/models/whip.glb");
-  const { ref, label } = usePointOfInterest("whip");
+  const { ref, label } = usePointOfInterest("Whip");
 
   const { position, rotation } = useControls("Whip", {
     position: {

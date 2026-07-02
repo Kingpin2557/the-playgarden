@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 import PlantLayer from "../PlantLayer/PlantLayer";
+import { setGround } from "../../lib/ground";
 
 export interface PlantConfig {
   url: string;
@@ -37,6 +38,11 @@ function PlantInstances({ models }: InstancesProps) {
       .clone()
       .applyMatrix4(new THREE.Matrix4().makeScale(scale.x, scale.y, scale.z));
   }
+
+  useEffect(() => {
+    setGround(surface.current);
+    return () => setGround(null);
+  }, []);
 
   return (
     <group>

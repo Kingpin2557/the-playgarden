@@ -5,6 +5,7 @@ import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
 import { useWeatherStore } from "../../store/weatherStore";
+import { playThunderClap } from "../../lib/thunderAudio";
 
 const MIN_GAP_SECONDS = 3;
 const MAX_GAP_SECONDS = 9;
@@ -28,6 +29,7 @@ function Lightning() {
       secondsUntilNextStrike.current -= deltaSeconds;
       if (secondsUntilNextStrike.current <= 0) {
         flashBrightness.current = FLASH_POWER * (0.6 + Math.random() * 0.4);
+        playThunderClap();
         secondsUntilNextStrike.current =
           MIN_GAP_SECONDS + Math.random() * (MAX_GAP_SECONDS - MIN_GAP_SECONDS);
       }

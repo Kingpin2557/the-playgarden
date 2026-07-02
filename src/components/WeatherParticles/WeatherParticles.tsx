@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
-import { useWeatherStore } from "../../store/weatherStore";
+import { useWeatherStore, type WeatherMode } from "../../store/weatherStore";
 import { sceneCenter, toScene } from "../../lib/mapScene";
 
 const MAX_PARTICLES = 3000;
@@ -22,12 +22,16 @@ const clampExtent = (value: number) =>
 function WeatherParticles() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
+  const setMode = useWeatherStore((state) => state.setMode);
 
   const { mode, coverage, height } = useControls("Weather", {
     mode: { value: "auto", options: ["auto", "rain", "snow"] },
     coverage: { value: 1.3, min: 1, max: 3, step: 0.1 },
     height: { value: 60, min: 10, max: 300, step: 5 },
   });
+  useEffect(() => {
+    setMode(mode as WeatherMode);
+  }, [mode, setMode]);
 
   const groupRef = useRef<THREE.Group>(null!);
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null!);

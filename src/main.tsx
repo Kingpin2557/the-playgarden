@@ -12,6 +12,9 @@ import { useDayNightCycle } from "./hooks/useDayNightCycle";
 import { useCameraFocus } from "./hooks/useCameraFocus";
 import { usePoiStore } from "./store/poiStore";
 import Buildings from "./components/Buildings/Buildings";
+import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
+import { useWeatherAudio } from "./hooks/useWeatherAudio";
+import { useBackgroundMusic } from "./hooks/useBackgroundMusic";
 import App from "./views/App";
 import Experience from "./views/Experience";
 
@@ -41,6 +44,8 @@ function Root() {
 
   useDayNightCycle(mapRef);
   useCameraFocus(mapRef); // flies to a PoI when one is focused
+  useWeatherAudio();
+  useBackgroundMusic();
 
   // While focused on a PoI the camera is fixed (no dragging/orbiting/zooming).
   const isFocused = usePoiStore((state) => state.focus !== null);
@@ -50,6 +55,7 @@ function Root() {
 
   return (
     <>
+      <WelcomeScreen />
       <Leva hidden={hideLeva} />
       <App />
       <Map
@@ -60,8 +66,10 @@ function Root() {
         maxZoom={25}
         scrollZoom={!isFocused}
         dragPan={false}
-        dragRotate={!isFocused}
-        touchZoomRotate={!isFocused}
+        dragRotate={isFocused}
+        pitchWithRotate={false}
+        touchPitch={false}
+        touchZoomRotate={false}
         doubleClickZoom={!isFocused}
         keyboard={false}
         initialViewState={{

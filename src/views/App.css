@@ -1,23 +1,11 @@
 .weather-badge {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10; /* sit on top of the map/canvas */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  color: white;
-  font: 14px/1.2 sans-serif;
-  backdrop-filter: blur(6px);
-}
-
-.weather-badge__icon {
-  font-size: 22px;
-}
-
-.weather-badge__temp {
-  font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text-h);
+    font: var(--weight-semibold) var(--font-sm) / var(--leading) var(--sans);
+    backdrop-filter: blur(var(--blur));
 }

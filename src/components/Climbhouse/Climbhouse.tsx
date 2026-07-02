@@ -5,7 +5,7 @@ import { usePointOfInterest } from "../../hooks/usePointOfInterest";
 
 function Climbhouse() {
   const { scene } = useGLTF("/models/climbhouse.glb");
-  const { ref, label } = usePointOfInterest("climbhouse");
+  const { ref, label } = usePointOfInterest("Climbhouse");
 
   const { position, rotation } = useControls("Climbhouse", {
     position: {

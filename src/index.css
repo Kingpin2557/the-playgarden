@@ -15,6 +15,34 @@
     --heading: system-ui, "Segoe UI", Roboto, sans-serif;
     --mono: ui-monospace, Consolas, monospace;
 
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+
+    --radius: 12px;
+    --radius-pill: 999px;
+    --border-width: 1px;
+
+    --blur: 6px;
+    --blur-sm: 4px;
+
+    --font-sm: 14px;
+    --font-md: 22px;
+    --font-lg: 28px;
+    --font-xl: 40px;
+    --font-welcome: clamp(48px, 12vw, 88px);
+    --leading: 1.3;
+    --panel-max-width: 260px;
+    --ui-inset: 16px;
+
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    --z-overlay: 10;
+    --z-welcome: 10000;
+
     font: 18px/145% var(--sans);
     letter-spacing: 0.18px;
     color-scheme: light dark;
@@ -106,4 +134,45 @@ div .leva-c-hBtFDW .leva-c-hBtFDW-hTGpNn-cv .leva-c-hBtFDW-gOvGdg-cv {
 #root {
     width: 100vw;
     height: 100vh;
+}
+
+.maplibregl-canvas-container.maplibregl-interactive,
+.maplibregl-canvas-container.maplibregl-interactive:active {
+    cursor: default;
+}
+
+.u-grid {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(1, 1fr);
+    gap: var(--space-2);
+    padding: var(--ui-inset);
+
+    z-index: var(--z-overlay);
+    pointer-events: none;
+
+    & > * {
+        pointer-events: auto;
+        align-self: start;
+    }
+
+    & > :first-child {
+        justify-self: start;
+    }
+
+    & > :last-child:not(:first-child) {
+        justify-self: end;
+    }
+}
+
+.fit {
+    width: fit-content;
+    height: fit-content;
+}
+
+.maplibregl-canvas-container.maplibregl-interactive,
+.maplibregl-canvas-container.maplibregl-interactive:active {
+    cursor: default;
 }
