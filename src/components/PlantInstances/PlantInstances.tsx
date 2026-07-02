@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
+import { useControls } from "leva";
 import PlantLayer from "../PlantLayer/PlantLayer";
 
 export interface PlantConfig {
@@ -17,6 +18,11 @@ function PlantInstances({ models }: InstancesProps) {
   const surface = useRef<THREE.Mesh>(null!);
   const { nodes } = useGLTF("/models/plane.glb");
   const plane = nodes.ground as THREE.Mesh;
+
+  // Fixed scatter seed — same layout every reload. Change it to reshuffle.
+  const { seed } = useControls("Scatter", {
+    seed: { value: 1, min: 0, max: 9999, step: 1 },
+  });
 
   // Bake the plane's own exported scale into its geometry (like the models use
   // their node scale). Baking into geometry — not the mesh scale — keeps the
@@ -44,6 +50,7 @@ function PlantInstances({ models }: InstancesProps) {
           key={config.url + config.nodeName}
           config={config}
           surface={surface}
+          seed={seed}
         />
       ))}
     </group>

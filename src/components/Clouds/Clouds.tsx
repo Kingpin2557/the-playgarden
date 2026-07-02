@@ -1,22 +1,20 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { useMap, coordsToVector3 } from "react-three-map/maplibre";
+import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
-import { COORDS } from "../../coords";
 import { useWeatherStore } from "../../store/weatherStore";
+import { sceneCenter } from "../../lib/mapScene";
 
-// ---- Tweak the clouds ----
-const MAX_CLOUDS = 12; // most clouds visible at full overcast
-const PUFFS_PER_CLOUD = 5; // low-poly blobs that make up one cloud
-const ALTITUDE = 80; // how high the clouds sit (m)
-const AREA = 300; // how far clouds spread around you (m)
-const DRIFT_SPEED = 3; // base drift speed (m/s)
-const THRESHOLD = 0.6; // only show clouds once the sky is this covered (0..1)
-// --------------------------
+const MAX_CLOUDS = 12;
+const PUFFS_PER_CLOUD = 5;
+const ALTITUDE = 80;
+const AREA = 300;
+const DRIFT_SPEED = 3;
+const THRESHOLD = 0.6;
 
-interface CloudPuff {
+interface Puff {
   offsetX: number;
   offsetY: number;
   offsetZ: number;
@@ -27,39 +25,35 @@ interface Cloud {
   x: number;
   z: number;
   scale: number;
-  puffs: CloudPuff[];
+  puffs: Puff[];
 }
 
-// Build the cloud shapes once (a position plus the blobs that make each cloud).
 function makeClouds(): Cloud[] {
-  const clouds: Cloud[] = [];
-  for (let cloudIndex = 0; cloudIndex < MAX_CLOUDS; cloudIndex++) {
-    const puffs: CloudPuff[] = [];
-    for (let puffIndex = 0; puffIndex < PUFFS_PER_CLOUD; puffIndex++) {
-      puffs.push({
-        offsetX: (Math.random() - 0.5) * 12,
-        offsetY: (Math.random() - 0.5) * 3,
-        offsetZ: (Math.random() - 0.5) * 8,
-        radius: 2 + Math.random() * 3,
-      });
-    }
-    clouds.push({
-      x: (Math.random() - 0.5) * AREA,
-      z: (Math.random() - 0.5) * AREA,
-      scale: 0.8 + Math.random() * 0.8,
-      puffs,
-    });
-  }
-  return clouds;
+  return Array.from({ length: MAX_CLOUDS }, () => ({
+    x: (Math.random() - 0.5) * AREA,
+    z: (Math.random() - 0.5) * AREA,
+    scale: 0.8 + Math.random() * 0.8,
+    puffs: Array.from({ length: PUFFS_PER_CLOUD }, () => ({
+      offsetX: (Math.random() - 0.5) * 12,
+      offsetY: (Math.random() - 0.5) * 3,
+      offsetZ: (Math.random() - 0.5) * 8,
+      radius: 2 + Math.random() * 3,
+    })),
+  }));
 }
 
-const puffTransform = new THREE.Object3D(); // reused to build each puff's matrix
+function wrap(value: number) {
+  if (value > AREA / 2) return value - AREA;
+  if (value < -AREA / 2) return value + AREA;
+  return value;
+}
+
+const puffTransform = new THREE.Object3D();
 
 function Clouds() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
 
-  // coverOverride: -1 uses the live weather, 0..1 forces a coverage for testing.
   const { coverOverride } = useControls("Clouds", {
     coverOverride: { value: -1, min: -1, max: 1, step: 0.05 },
   });
@@ -68,21 +62,19 @@ function Clouds() {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null!);
   const materialRef = useRef<THREE.MeshStandardMaterial>(null!);
 
-  const cloudShapes = useRef<Cloud[] | null>(null);
-  if (!cloudShapes.current) cloudShapes.current = makeClouds();
-  const clouds = cloudShapes.current;
+  const cloudsRef = useRef<Cloud[] | null>(null);
+  if (!cloudsRef.current) cloudsRef.current = makeClouds();
+  const clouds = cloudsRef.current;
 
-  const coverage =
-    coverOverride >= 0 ? coverOverride : (weather?.cloudCover ?? 0);
-  // Nothing below the threshold; above it, ramp from 0 up to full.
+  const coverage = coverOverride >= 0 ? coverOverride : weather?.cloudCover ?? 0;
   const cloudiness =
     coverage < THRESHOLD ? 0 : (coverage - THRESHOLD) / (1 - THRESHOLD);
   const activeCloudCount = Math.round(MAX_CLOUDS * cloudiness);
 
-  const windAngleRadians = ((weather?.windDirection ?? 0) * Math.PI) / 180;
-  const windMultiplier = 1 + (weather?.windSpeed ?? 0) / 20;
-  const driftX = Math.sin(windAngleRadians) * DRIFT_SPEED * windMultiplier;
-  const driftZ = Math.cos(windAngleRadians) * DRIFT_SPEED * windMultiplier;
+  const windAngle = ((weather?.windDirection ?? 0) * Math.PI) / 180;
+  const windSpeed = DRIFT_SPEED * (1 + (weather?.windSpeed ?? 0) / 20);
+  const driftX = Math.sin(windAngle) * windSpeed;
+  const driftZ = Math.cos(windAngle) * windSpeed;
 
   useEffect(() => {
     instancedMeshRef.current.count = activeCloudCount * PUFFS_PER_CLOUD;
@@ -90,30 +82,21 @@ function Clouds() {
   }, [activeCloudCount, map]);
 
   useFrame((_state, deltaSeconds) => {
-    if (activeCloudCount === 0) return; // clear sky: nothing to draw
+    if (activeCloudCount === 0) return;
 
-    // Keep the clouds above the map center (where you're looking).
-    const center = map.getCenter();
-    const [centerX, , centerZ] = coordsToVector3(
-      { longitude: center.lng, latitude: center.lat },
-      { longitude: COORDS.longitude, latitude: COORDS.latitude },
-    );
+    const [centerX, centerZ] = sceneCenter(map);
     groupRef.current.position.set(centerX, ALTITUDE, centerZ);
 
-    // White clouds, greyer when overcast, dark when thundering.
-    const shade = weather?.isThunder ? 0.4 : 1 - coverage * 0.35;
-    materialRef.current.color.setScalar(shade);
+    materialRef.current.color.setScalar(
+      weather?.isThunder ? 0.4 : 1 - coverage * 0.35,
+    );
 
     const instancedMesh = instancedMeshRef.current;
-    let puffMatrixIndex = 0;
-    for (let cloudIndex = 0; cloudIndex < activeCloudCount; cloudIndex++) {
-      const cloud = clouds[cloudIndex];
-      cloud.x += driftX * deltaSeconds;
-      cloud.z += driftZ * deltaSeconds;
-      if (cloud.x > AREA / 2) cloud.x -= AREA;
-      if (cloud.x < -AREA / 2) cloud.x += AREA;
-      if (cloud.z > AREA / 2) cloud.z -= AREA;
-      if (cloud.z < -AREA / 2) cloud.z += AREA;
+    let puffIndex = 0;
+    for (let index = 0; index < activeCloudCount; index++) {
+      const cloud = clouds[index];
+      cloud.x = wrap(cloud.x + driftX * deltaSeconds);
+      cloud.z = wrap(cloud.z + driftZ * deltaSeconds);
 
       for (const puff of cloud.puffs) {
         puffTransform.position.set(
@@ -123,8 +106,8 @@ function Clouds() {
         );
         puffTransform.scale.setScalar(puff.radius * cloud.scale);
         puffTransform.updateMatrix();
-        instancedMesh.setMatrixAt(puffMatrixIndex, puffTransform.matrix);
-        puffMatrixIndex++;
+        instancedMesh.setMatrixAt(puffIndex, puffTransform.matrix);
+        puffIndex++;
       }
     }
     instancedMesh.instanceMatrix.needsUpdate = true;
@@ -139,12 +122,7 @@ function Clouds() {
         frustumCulled={false}
       >
         <icosahedronGeometry args={[1, 1]} />
-        <meshStandardMaterial
-          ref={materialRef}
-          color="#ffffff"
-          flatShading
-          roughness={1}
-        />
+        <meshStandardMaterial ref={materialRef} color="#ffffff" flatShading roughness={1} />
       </instancedMesh>
     </group>
   );

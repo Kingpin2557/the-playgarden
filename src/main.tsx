@@ -9,11 +9,18 @@ import { Canvas } from "react-three-map/maplibre";
 
 import { COORDS } from "./coords";
 import { useDayNightCycle } from "./hooks/useDayNightCycle";
+import { useCameraFocus } from "./hooks/useCameraFocus";
+import { usePoiStore } from "./store/poiStore";
 import Buildings from "./components/Buildings/Buildings";
 import App from "./views/App";
 import Experience from "./views/Experience";
 
 const isDev = false;
+
+const CAMERA_START = { zoom: 20, pitch: 60, bearing: 30 };
+
+// Keyless map style (OpenFreeMap). Alternatives: .../styles/positron | .../styles/bright
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
 function Root() {
   const mapRef = useRef<MapRef>(null);
@@ -23,8 +30,8 @@ function Root() {
     latitude: { value: COORDS.latitude, step: 0.00001 },
   });
 
-  // Drives the MapLibre sky + light for the day/night cycle.
   useDayNightCycle(mapRef);
+  useCameraFocus(mapRef); // flies to a PoI when one is focused
 
   return (
     <>
@@ -37,15 +44,26 @@ function Root() {
         minZoom={0}
         maxZoom={25}
         scrollZoom={true}
-        dragPan={true}
+        dragPan={false}
+        dragRotate={true}
         touchZoomRotate={true}
-        keyboard={true}
-        initialViewState={{ longitude, latitude, zoom: 50 }}
-        mapStyle={`https://api.maptiler.com/maps/base-v4/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`}
+        keyboard={false}
+        initialViewState={{
+          longitude,
+          latitude,
+          zoom: CAMERA_START.zoom,
+          pitch: CAMERA_START.pitch,
+          bearing: CAMERA_START.bearing,
+        }}
+        mapStyle={MAP_STYLE}
         style={{ width: "100vw", height: "100vh" }}
       >
         <Buildings />
-        <Canvas longitude={longitude} latitude={latitude}>
+        <Canvas
+          longitude={longitude}
+          latitude={latitude}
+          onPointerMissed={() => usePoiStore.getState().clear()}
+        >
           <Experience />
         </Canvas>
       </Map>

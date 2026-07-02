@@ -1,6 +1,8 @@
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 
+import PointOfInterest from "../PointOfInterest/PointOfInterest";
+
 function Goals() {
   const { scene } = useGLTF("/models/goals.glb");
 
@@ -22,11 +24,9 @@ function Goals() {
   });
 
   return (
-    <primitive
-      object={scene}
-      position={[position.x, 0, position.y]}
-      rotation={[0, (rotation * Math.PI) / 180, 0]}
-    />
+    <PointOfInterest name="Goals" position={[position.x, 0, position.y]}>
+      <primitive object={scene} rotation={[0, (rotation * Math.PI) / 180, 0]} />
+    </PointOfInterest>
   );
 }
 

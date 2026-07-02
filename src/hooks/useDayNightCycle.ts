@@ -3,10 +3,12 @@ import type { RefObject } from "react";
 import type { MapRef } from "react-map-gl/maplibre";
 import { useControls } from "leva";
 
-// Colors for the sky at different times. Interpolated by how high the sun is.
+import { useWeatherStore } from "../store/weatherStore";
+
 const DAY = { sky: "#87ceeb", horizon: "#cfe8ff", fog: "#eaf6ff" };
 const NIGHT = { sky: "#0b1026", horizon: "#1b2540", fog: "#0e1630" };
-const DUSK = { sky: "#f6a15a", horizon: "#ff8c42", fog: "#ffb27a" }; // sunrise/sunset
+const DUSK = { sky: "#f6a15a", horizon: "#ff8c42", fog: "#ffb27a" };
+const CLOUDY = { sky: "#8a93a3", horizon: "#9aa3b2", fog: "#aeb6c2" };
 
 const lerp = (start: number, end: number, amount: number) =>
   start + (end - start) * amount;
@@ -20,80 +22,84 @@ function lerpHex(startHex: string, endHex: string, amount: number) {
   return `#${((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1)}`;
 }
 
-// Drives a day/night cycle on the MapLibre map using its built-in sky + light.
-// Takes the map ref from <Map> so it can run from the root (no null component).
+function blend(
+  night: string,
+  day: string,
+  dusk: string,
+  cloudy: string,
+  dayAmount: number,
+  twilight: number,
+  gloom: number,
+) {
+  return lerpHex(lerpHex(lerpHex(night, day, dayAmount), dusk, twilight), cloudy, gloom);
+}
+
+const currentLocalHour = () => {
+  const now = new Date();
+  return now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+};
+
 export function useDayNightCycle(mapRef: RefObject<MapRef | null>) {
-  // mode "auto" runs the cycle on its own; "manual" lets you set the hour.
-  const { mode, hour, dayLength } = useControls("Sky", {
+  const weather = useWeatherStore((state) => state.weather);
+
+  const { mode, hour } = useControls("Sky", {
     mode: { value: "auto", options: ["auto", "manual"] },
-    hour: { value: 12, min: 0, max: 24, step: 0.1 },
-    dayLength: { value: 60, min: 5, max: 600, step: 5 }, // seconds for a full day
+    hour: {
+      value: 12,
+      min: 0,
+      max: 24,
+      step: 0.1,
+      render: (get) => get("Sky.mode") === "manual",
+    },
   });
 
-  const currentHour = useRef(hour);
-  useEffect(() => {
-    currentHour.current = hour; // follow the slider when the user drags it
-  }, [hour]);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const hourRef = useRef(hour);
+  hourRef.current = hour;
+  const weatherRef = useRef(weather);
+  weatherRef.current = weather;
 
   useEffect(() => {
     const updateSky = (hourOfDay: number) => {
       const map = mapRef.current?.getMap();
       if (!map || !map.isStyleLoaded()) return;
 
-      // sun elevation: 0 at 6h, 1 at noon, 0 at 18h, negative at night
       const elevation = Math.sin(((hourOfDay - 6) / 12) * Math.PI);
-      const dayAmount = Math.max(0, elevation); // 0 = night, 1 = midday
-      const twilightAmount = Math.max(0, 1 - Math.abs(elevation) * 3); // near horizon
+      const dayAmount = Math.max(0, elevation);
+      const twilight = Math.max(0, 1 - Math.abs(elevation) * 3);
 
-      const skyColor = lerpHex(
-        lerpHex(NIGHT.sky, DAY.sky, dayAmount),
-        DUSK.sky,
-        twilightAmount * 0.6,
-      );
-      const horizonColor = lerpHex(
-        lerpHex(NIGHT.horizon, DAY.horizon, dayAmount),
-        DUSK.horizon,
-        twilightAmount * 0.7,
-      );
-      const fogColor = lerpHex(
-        lerpHex(NIGHT.fog, DAY.fog, dayAmount),
-        DUSK.fog,
-        twilightAmount * 0.5,
-      );
+      const current = weatherRef.current;
+      const gloom = current?.isThunder
+        ? 0.85
+        : Math.min(current?.cloudCover ?? 0, 1) * 0.6;
 
-      // Built-in MapLibre sky (visible when the map is tilted).
       map.setSky({
-        "sky-color": skyColor,
-        "horizon-color": horizonColor,
-        "fog-color": fogColor,
+        "sky-color": blend(NIGHT.sky, DAY.sky, DUSK.sky, CLOUDY.sky, dayAmount, twilight * 0.6, gloom),
+        "horizon-color": blend(NIGHT.horizon, DAY.horizon, DUSK.horizon, CLOUDY.horizon, dayAmount, twilight * 0.7, gloom),
+        "fog-color": blend(NIGHT.fog, DAY.fog, DUSK.fog, CLOUDY.fog, dayAmount, twilight * 0.5, gloom),
         "sky-horizon-blend": 0.6,
         "horizon-fog-blend": 0.6,
         "fog-ground-blend": 0.4,
         "atmosphere-blend": 0.8,
       });
 
-      // Built-in MapLibre light drives the 3D buildings (sun position + color).
       map.setLight({
         anchor: "map",
         position: [1.2, (hourOfDay / 24) * 360, 90 - dayAmount * 85],
         color: lerpHex("#20304f", "#fff4e0", dayAmount),
-        intensity: 0.15 + dayAmount * 0.5,
+        intensity: (0.15 + dayAmount * 0.5) * (1 - gloom * 0.5),
       });
     };
 
     let animationFrameId = 0;
-    let lastTimestamp = performance.now();
-    const animate = (timestamp: number) => {
-      const deltaSeconds = (timestamp - lastTimestamp) / 1000;
-      lastTimestamp = timestamp;
-      if (mode === "auto") {
-        currentHour.current =
-          (currentHour.current + (24 / dayLength) * deltaSeconds) % 24;
-      }
-      updateSky(currentHour.current);
+    const animate = () => {
+      const hourOfDay =
+        modeRef.current === "auto" ? currentLocalHour() : hourRef.current;
+      updateSky(hourOfDay);
       animationFrameId = requestAnimationFrame(animate);
     };
     animationFrameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [mapRef, mode, dayLength]);
+  }, [mapRef]);
 }

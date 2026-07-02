@@ -4,9 +4,11 @@ import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
+import { useFocusPlaneCenter } from "../hooks/useFocusPlaneCenter";
 
 function Experience() {
   useWeatherUpdater();
+  useFocusPlaneCenter(); // aim the camera at the plane's bounding-box center
 
   const MY_NATURE = [
     {

@@ -1,20 +1,15 @@
-// Talks to the Open-Meteo weather API (free, no key needed) and returns a
-// simple, ready-to-use weather object for one location.
-
 export interface Weather {
-  temperature: number; // °C
-  precipitation: number; // mm in the last hour
-  windSpeed: number; // km/h
-  windDirection: number; // degrees (0 = coming from the north)
-  cloudCover: number; // 0..1 (fraction of sky covered)
+  temperature: number;
+  precipitation: number;
+  windSpeed: number;
+  windDirection: number;
+  cloudCover: number;
   isSnow: boolean;
   isThunder: boolean;
-  icon: string; // emoji you can drop straight into the UI
-  label: string; // short text, e.g. "Light rain"
+  icon: string;
+  label: string;
 }
 
-// Turns an Open-Meteo weather code into an icon + label.
-// Codes: https://open-meteo.com/en/docs (WMO weather codes)
 function describeWeather(weatherCode: number): { icon: string; label: string } {
   if (weatherCode === 0) return { icon: "☀️", label: "Clear" };
   if (weatherCode <= 2) return { icon: "🌤️", label: "Partly cloudy" };

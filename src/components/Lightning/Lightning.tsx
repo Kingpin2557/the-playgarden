@@ -6,19 +6,15 @@ import { useControls } from "leva";
 
 import { useWeatherStore } from "../../store/weatherStore";
 
-// ---- Tweak the lightning ----
-const MIN_GAP_SECONDS = 3; // shortest gap between strikes
-const MAX_GAP_SECONDS = 9; // longest gap between strikes
-const FLASH_POWER = 6; // brightness of a strike
-const FADE_SPEED = 12; // how fast a flash fades (higher = quicker)
-// -----------------------------
+const MIN_GAP_SECONDS = 3;
+const MAX_GAP_SECONDS = 9;
+const FLASH_POWER = 6;
+const FADE_SPEED = 12;
 
 function Lightning() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
-  const { forceLightning } = useControls("Lightning", {
-    forceLightning: false,
-  });
+  const { forceLightning } = useControls("Lightning", { forceLightning: false });
 
   const lightRef = useRef<THREE.DirectionalLight>(null!);
   const flashBrightness = useRef(0);
@@ -26,7 +22,7 @@ function Lightning() {
 
   useFrame((_state, deltaSeconds) => {
     const isStorming = forceLightning || !!weather?.isThunder;
-    if (!isStorming && flashBrightness.current === 0) return; // nothing to do
+    if (!isStorming && flashBrightness.current === 0) return;
 
     if (isStorming) {
       secondsUntilNextStrike.current -= deltaSeconds;
@@ -46,12 +42,7 @@ function Lightning() {
   });
 
   return (
-    <directionalLight
-      ref={lightRef}
-      position={[0, 200, 60]}
-      intensity={0}
-      color="#eaf2ff"
-    />
+    <directionalLight ref={lightRef} position={[0, 200, 60]} intensity={0} color="#eaf2ff" />
   );
 }
 
