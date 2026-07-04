@@ -14,8 +14,7 @@ import { usePoiStore } from "./store/poiStore";
 import Buildings from "./components/Buildings/Buildings";
 import WelcomeScreen from "./components/WelcomeScreen/WelcomeScreen";
 import LightningFlash from "./components/LightningFlash/LightningFlash";
-import { useWeatherAudio } from "./hooks/useWeatherAudio";
-import { useBackgroundMusic } from "./hooks/useBackgroundMusic";
+import { useAudio } from "./hooks/useAudio";
 import App from "./views/App";
 import Experience from "./views/Experience";
 
@@ -45,8 +44,7 @@ function Root() {
 
   useDayNightCycle(mapRef);
   useCameraFocus(mapRef); // flies to a PoI when one is focused
-  useWeatherAudio();
-  useBackgroundMusic();
+  useAudio();
 
   // While focused on a PoI the camera is fixed (no dragging/orbiting/zooming).
   const isFocused = usePoiStore((state) => state.focus !== null);

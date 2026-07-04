@@ -1,4 +1,8 @@
-import PlantInstances from "../components/PlantInstances/PlantInstances";
+import { useControls } from "leva";
+
+import PlantInstances, {
+  MAX_DENSITY,
+} from "../components/PlantInstances/PlantInstances";
 import Goals from "../components/goals/Goals";
 import Swing from "../components/wing/Swing";
 import Climbhouse from "../components/Climbhouse/Climbhouse";
@@ -24,15 +28,26 @@ function Experience() {
       url: "/scatter/tree.glb",
       nodeName: "trees",
       count: 50,
-      occludes: true,
     },
   ];
+
+  // One density slider per scattered model (1 = its base count).
+  // Function form: Leva parses the schema once, so the hook count stays stable.
+  // It returns a [values, set] tuple, so take the values with [density].
+  const [density] = useControls("Density", () =>
+    Object.fromEntries(
+      MY_NATURE.map((model) => [
+        model.nodeName,
+        { value: 1, min: 0, max: MAX_DENSITY, step: 0.05 },
+      ]),
+    ),
+  );
 
   return (
     <>
       <ambientLight intensity={Math.PI} />
       <directionalLight position={[10, 20, 10]} intensity={2} />
-      <PlantInstances models={MY_NATURE} />
+      <PlantInstances models={MY_NATURE} density={density} />
       <WeatherParticles />
       <Goals />
       <Climbhouse />

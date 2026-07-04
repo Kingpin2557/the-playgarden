@@ -9,21 +9,27 @@ export interface PlantConfig {
   url: string;
   nodeName: string;
   count: number;
-  occludes?: boolean;
 }
 
 interface InstancesProps {
   models: PlantConfig[];
+  density: Record<string, number>; // per-model multiplier, keyed by nodeName
 }
 
-function PlantInstances({ models }: InstancesProps) {
+// Density is a multiplier on each layer's base count; this is its ceiling and
+// also sizes the instance buffer so the scatter can grow past the base.
+export const MAX_DENSITY = 2;
+
+function PlantInstances({ models, density }: InstancesProps) {
   const surface = useRef<THREE.Mesh>(null!);
   const { nodes } = useGLTF("/models/plane.glb");
   const plane = nodes.ground as THREE.Mesh;
 
-  // Fixed scatter seed — same layout every reload. Change it to reshuffle.
-  const { seed } = useControls("Scatter", {
-    seed: { value: 4175, min: 0, max: 9999, step: 1 },
+  // Spin the whole ground (plane + its scattered plants) around the vertical
+  // axis. Rotating only on Y keeps it lying flat on the map, never tilted.
+  // Shares the "Map" Leva folder with longitude/latitude (Leva merges by name).
+  const { rotation } = useControls("Map", {
+    rotation: { value: 0, min: 0, max: 360, step: 1 },
   });
 
   // Bake the plane's own exported scale into its geometry (like the models use
@@ -45,7 +51,7 @@ function PlantInstances({ models }: InstancesProps) {
   }, []);
 
   return (
-    <group>
+    <group rotation={[0, (rotation * Math.PI) / 180, 0]}>
       <mesh
         ref={surface}
         geometry={geometryRef.current}
@@ -57,7 +63,8 @@ function PlantInstances({ models }: InstancesProps) {
           key={config.url + config.nodeName}
           config={config}
           surface={surface}
-          seed={seed}
+          density={density[config.nodeName] ?? 1}
+          capacity={Math.ceil(config.count * MAX_DENSITY)}
         />
       ))}
     </group>

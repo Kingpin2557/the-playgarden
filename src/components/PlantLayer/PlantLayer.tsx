@@ -5,31 +5,21 @@ import { useGLTF } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
 import type { PlantConfig } from "../PlantInstances/PlantInstances";
 
-// Models come in Blender Z-up (their up axis is +Z).
-const UP = new THREE.Vector3(0, 0, -1);
+// Models come from Blender Z-up, so their up axis is +Z. Aligning that axis
+// to the ground normal makes each instance stand upright on the surface.
+const UP = new THREE.Vector3(0, 0, 1);
 const instanceTransform = new THREE.Object3D(); // reused to build each matrix
 
-// Deterministic RNG (mulberry32) — same seed always gives the same numbers,
-// so the scatter is identical on every reload instead of reshuffling.
-function makeRandom(seed: number) {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// One fixed seed so the scatter looks the same on every reload.
+const SCATTER_SEED = 1337;
 
-// Stable seed derived from the layer name, so each type (plants/rocks/trees)
-// has its own fixed-but-distinct distribution.
-function seedFromText(text: string) {
-  let hash = 2166136261;
-  for (let index = 0; index < text.length; index++) {
-    hash ^= text.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
+// Tiny deterministic RNG: the same seed always yields the same sequence.
+function makeRandom(seed: number) {
+  let state = seed;
+  return () => {
+    state = (state * 1103515245 + 12345) % 2147483648;
+    return state / 2147483648;
+  };
 }
 
 function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
@@ -44,11 +34,13 @@ function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
 function PlantLayer({
   config,
   surface,
-  seed,
+  density,
+  capacity,
 }: {
   config: PlantConfig;
   surface: RefObject<THREE.Mesh>;
-  seed: number;
+  density: number;
+  capacity: number;
 }) {
   const map = useMap();
   const { scene } = useGLTF(config.url);
@@ -73,9 +65,9 @@ function PlantLayer({
     const instancedMesh = instancedMeshRef.current;
     if (!surfaceMesh || !model || !instancedMesh) return;
 
-    // combine the Leva seed with the layer name: distinct per type, and
-    // changing the seed reshuffles everything together.
-    const random = makeRandom((seedFromText(config.nodeName) ^ seed) >>> 0);
+    const random = makeRandom(SCATTER_SEED);
+
+    const activeCount = Math.min(Math.round(config.count * density), capacity);
 
     const modelScale = new THREE.Vector3();
     model.updateWorldMatrix(true, false);
@@ -92,7 +84,7 @@ function PlantLayer({
 
       const position = new THREE.Vector3();
       const normal = new THREE.Vector3();
-      for (let index = 0; index < config.count; index++) {
+      for (let index = 0; index < activeCount; index++) {
         sampler.sample(position, normal);
         instanceTransform.position.copy(position);
         instanceTransform.quaternion.setFromUnitVectors(UP, normal);
@@ -105,19 +97,19 @@ function PlantLayer({
       Math.random = originalRandom;
     }
 
-    instancedMesh.count = config.count;
+    instancedMesh.count = activeCount;
     instancedMesh.instanceMatrix.needsUpdate = true;
     map.triggerRepaint();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, surface, config.nodeName, config.count, , seed]);
+  }, [model, surface, config.nodeName, config.count, density]);
 
   if (!model) return null;
 
   return (
     <instancedMesh
       ref={instancedMeshRef}
-      args={[model.geometry, model.material, config.count]}
+      args={[model.geometry, model.material, capacity]}
       frustumCulled={false}
     />
   );

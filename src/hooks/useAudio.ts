@@ -5,6 +5,8 @@ import { useAppStore } from "../store/appStore";
 import type { Weather } from "../lib/weatherApi";
 import { createAudioLoop } from "../lib/audioLoop";
 
+const MUSIC_SOURCE = "/audio/music.mp3";
+const MUSIC_VOLUME = 0.15;
 const AMBIENT_VOLUME = 0.5;
 
 const AMBIENT_SOURCES = {
@@ -26,25 +28,41 @@ function pickAmbient(mode: WeatherMode, weather: Weather | null): AmbientKey | n
   return null;
 }
 
-export function useWeatherAudio() {
+export function useAudio() {
   const weather = useWeatherStore((state) => state.weather);
   const mode = useWeatherStore((state) => state.mode);
   const entered = useAppStore((state) => state.entered);
   const audioEnabled = useAppStore((state) => state.audioEnabled);
-  const loopRef = useRef<ReturnType<typeof createAudioLoop> | null>(null);
 
-  const ambient = entered && audioEnabled ? pickAmbient(mode, weather) : null;
+  const musicRef = useRef<ReturnType<typeof createAudioLoop> | null>(null);
+  const ambientRef = useRef<ReturnType<typeof createAudioLoop> | null>(null);
+
+  const soundOn = entered && audioEnabled;
+  const ambient = soundOn ? pickAmbient(mode, weather) : null;
 
   useEffect(() => {
-    if (!loopRef.current) {
-      loopRef.current = createAudioLoop(AMBIENT_VOLUME);
+    if (!musicRef.current) {
+      musicRef.current = createAudioLoop(MUSIC_VOLUME);
     }
-    const loop = loopRef.current;
+    const music = musicRef.current;
+
+    if (soundOn) {
+      music.play(MUSIC_SOURCE);
+    } else {
+      music.stop();
+    }
+  }, [soundOn]);
+
+  useEffect(() => {
+    if (!ambientRef.current) {
+      ambientRef.current = createAudioLoop(AMBIENT_VOLUME);
+    }
+    const ambientLoop = ambientRef.current;
 
     if (!ambient) {
-      loop.stop();
+      ambientLoop.stop();
       return;
     }
-    loop.play(AMBIENT_SOURCES[ambient]);
+    ambientLoop.play(AMBIENT_SOURCES[ambient]);
   }, [ambient]);
 }
