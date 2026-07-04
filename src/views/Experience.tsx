@@ -3,10 +3,10 @@ import { useControls } from "leva";
 import PlantInstances, {
   MAX_DENSITY,
 } from "../components/PlantInstances/PlantInstances";
-import Goals from "../components/goals/Goals";
-import Swing from "../components/wing/Swing";
+import Goals from "../components/Goals/Goals";
+import Swing from "../components/Swing/Swing";
 import Climbhouse from "../components/Climbhouse/Climbhouse";
-import WeatherParticles from "../components/weatherparticles/WeatherParticles";
+import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
 
