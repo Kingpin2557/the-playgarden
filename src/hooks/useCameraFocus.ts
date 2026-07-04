@@ -55,7 +55,7 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
   const focus = usePoiStore((state) => state.focus);
 
   const { zoom, pitch, bearing, rotate } = useControls("Focus", {
-    zoom: { value: 22.5, min: 0, max: 25, step: 0.5 },
+    zoom: { value: 21.5, min: 0, max: 25, step: 0.5 },
     pitch: { value: 72, min: 0, max: 80, step: 1 },
     bearing: { value: 253, min: 0, max: 360, step: 1 },
     rotate: { value: 80, min: 0, max: 360, step: 5 },
