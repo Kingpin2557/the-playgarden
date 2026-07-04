@@ -42,6 +42,11 @@ function Experience() {
       nodeName: "flowers",
       count: 100,
     },
+    {
+      url: "/scatter/trunk.glb",
+      nodeName: "trunks",
+      count: 6,
+    },
   ];
 
   const [density] = useControls("Density", () =>
