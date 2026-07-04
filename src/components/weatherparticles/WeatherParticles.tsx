@@ -5,11 +5,9 @@ import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
 import { useWeatherStore, type WeatherMode } from "../../store/weatherStore";
-import { sceneCenter, toScene } from "../../lib/mapScene";
+import { useMapStore } from "../../store/mapStore";
 
 const MAX_PARTICLES = 3000;
-const MIN_HALF_EXTENT = 20;
-const MAX_HALF_EXTENT = 400;
 
 const RAIN = {
   fallSpeed: 40,
@@ -26,18 +24,16 @@ const SNOW = {
 
 const particleTransform = new THREE.Object3D();
 
-const clampExtent = (value: number) =>
-  Math.min(Math.max(value, MIN_HALF_EXTENT), MAX_HALF_EXTENT);
-
 function WeatherParticles() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
   const setMode = useWeatherStore((state) => state.setMode);
+  const boxArea = useMapStore((state) => state.boxArea);
 
-  const { mode, coverage, height } = useControls("Weather", {
+  // height is the "roof" over the pan box that rain/snow falls from.
+  const { mode, height } = useControls("Weather", {
     mode: { value: "auto", options: ["auto", "rain", "snow"] },
-    coverage: { value: 1.3, min: 1, max: 3, step: 0.1 },
-    height: { value: 60, min: 10, max: 300, step: 5 },
+    height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
   });
   useEffect(() => {
     setMode(mode as WeatherMode);
@@ -54,9 +50,7 @@ function WeatherParticles() {
     const positions = new Float32Array(MAX_PARTICLES * 3);
     const fallSpeeds = new Float32Array(MAX_PARTICLES);
     for (let index = 0; index < MAX_PARTICLES; index++) {
-      positions[index * 3] = (Math.random() - 0.5) * 100;
       positions[index * 3 + 1] = Math.random() * height;
-      positions[index * 3 + 2] = (Math.random() - 0.5) * 100;
       fallSpeeds[index] = 0.7 + Math.random() * 0.6;
     }
     particleData.current = { positions, fallSpeeds };
@@ -80,16 +74,12 @@ function WeatherParticles() {
   }, [activeCount, map]);
 
   useFrame((_state, deltaSeconds) => {
-    if (activeCount === 0) return;
+    if (activeCount === 0 || !boxArea) return;
 
-    const bounds = map.getBounds();
-    const [westX, southZ] = toScene(bounds.getWest(), bounds.getSouth());
-    const [eastX, northZ] = toScene(bounds.getEast(), bounds.getNorth());
-    const halfX = clampExtent((Math.abs(eastX - westX) / 2) * coverage);
-    const halfZ = clampExtent((Math.abs(northZ - southZ) / 2) * coverage);
-
-    const [centerX, centerZ] = sceneCenter(map);
-    groupRef.current.position.set(centerX, 0, centerZ);
+    // Spawn area = the pan box roof; particles fall straight down onto the park.
+    const halfX = boxArea.width / 2;
+    const halfZ = boxArea.length / 2;
+    groupRef.current.position.set(boxArea.x, 0, boxArea.z);
 
     const instancedMesh = instancedMeshRef.current;
     for (let index = 0; index < activeCount; index++) {
@@ -99,10 +89,10 @@ function WeatherParticles() {
       positions[index * 3 + 2] += windDriftZ * deltaSeconds;
 
       const belowGround = positions[index * 3 + 1] < 0;
-      const outsideView =
+      const outsideBox =
         Math.abs(positions[index * 3]) > halfX ||
         Math.abs(positions[index * 3 + 2]) > halfZ;
-      if (belowGround || outsideView) {
+      if (belowGround || outsideBox) {
         positions[index * 3] = (Math.random() - 0.5) * 2 * halfX;
         positions[index * 3 + 2] = (Math.random() - 0.5) * 2 * halfZ;
         positions[index * 3 + 1] = belowGround

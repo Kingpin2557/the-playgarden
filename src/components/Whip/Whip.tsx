@@ -9,7 +9,7 @@ function Whip() {
 
   const { position, rotation } = useControls("Whip", {
     position: {
-      value: { x: -35.9991455078125, y: -85.99993896484375 },
+      value: { x: -18.332504272460938, y: -43.00018310546875 },
       step: 1,
       joystick: "invertY",
     },

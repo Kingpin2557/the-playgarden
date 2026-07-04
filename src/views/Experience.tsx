@@ -11,29 +11,39 @@ import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
 
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
-import { useFocusPlaneCenter } from "../hooks/useFocusPlaneCenter";
 import Whip from "../components/Whip/Whip";
 
 function Experience() {
   useWeatherUpdater();
-  useFocusPlaneCenter(); // aim the camera at the plane's bounding-box center
 
   const MY_NATURE = [
     {
       url: "/scatter/plant.glb",
       nodeName: "plants",
-      count: 500000,
+      count: 50000,
     },
     {
       url: "/scatter/tree.glb",
       nodeName: "trees",
       count: 50,
     },
+    {
+      url: "/scatter/mushroom.glb",
+      nodeName: "mushrooms",
+      count: 50,
+    },
+    {
+      url: "/scatter/flower.glb",
+      nodeName: "flowers",
+      count: 100,
+    },
+    {
+      url: "/scatter/flower2.glb",
+      nodeName: "flowers",
+      count: 100,
+    },
   ];
 
-  // One density slider per scattered model (1 = its base count).
-  // Function form: Leva parses the schema once, so the hook count stays stable.
-  // It returns a [values, set] tuple, so take the values with [density].
   const [density] = useControls("Density", () =>
     Object.fromEntries(
       MY_NATURE.map((model) => [

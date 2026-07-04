@@ -10,6 +10,10 @@ const instanceTransform = new THREE.Object3D(); // reused to build each matrix
 // One fixed seed so the scatter looks the same on every reload.
 const SCATTER_SEED = 1337;
 
+// Instances placed per frame. Big enough to fill in within a few frames (so
+// there's no visible crawl), small enough to never freeze the page on load.
+const CHUNK_SIZE = 50000;
+
 // Tiny deterministic RNG: the same seed always yields the same sequence.
 function makeRandom(seed: number) {
   let state = seed;
@@ -65,7 +69,6 @@ function PlantLayer({
     if (!surfaceMesh || !model || !instancedMesh) return;
 
     const random = makeRandom(SCATTER_SEED);
-
     const activeCount = Math.min(Math.round(config.count * density), capacity);
     const upVector = new THREE.Vector3(up.x, up.y, up.z).normalize();
 
@@ -73,20 +76,27 @@ function PlantLayer({
     model.updateWorldMatrix(true, false);
     model.getWorldScale(modelScale);
 
-    // MeshSurfaceSampler samples with Math.random(); swap in our seeded generator
-    // so the scatter is identical every reload, then restore it afterwards.
-    const originalRandom = Math.random;
-    Math.random = random;
-    try {
-      const sampler = new MeshSurfaceSampler(surfaceMesh)
-        .setWeightAttribute(`_${config.nodeName}`)
-        .build();
+    const sampler = new MeshSurfaceSampler(surfaceMesh)
+      .setWeightAttribute(`_${config.weight ?? config.nodeName}`)
+      .build();
 
-      const position = new THREE.Vector3();
-      const normal = new THREE.Vector3();
-      const spin = new THREE.Quaternion();
-      const align = new THREE.Quaternion();
-      for (let index = 0; index < activeCount; index++) {
+    const position = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    const spin = new THREE.Quaternion();
+    const align = new THREE.Quaternion();
+
+    let placed = 0;
+    let frameId = 0;
+
+    // Place CHUNK_SIZE instances, then hand control back to the browser and
+    // continue next frame, so the plants fill in without blocking the page.
+    function placeChunk() {
+      // MeshSurfaceSampler samples with Math.random(); swap in the seeded
+      // generator only around the sampling, then restore it.
+      const originalRandom = Math.random;
+      Math.random = random;
+      const end = Math.min(placed + CHUNK_SIZE, activeCount);
+      for (; placed < end; placed++) {
         sampler.sample(position, normal);
         // spin around the up axis first, then tilt that up axis onto the
         // ground normal — so the random spin never tips the model over.
@@ -96,18 +106,31 @@ function PlantLayer({
         instanceTransform.quaternion.copy(align).multiply(spin);
         instanceTransform.scale.copy(modelScale);
         instanceTransform.updateMatrix();
-        instancedMesh.setMatrixAt(index, instanceTransform.matrix);
+        instancedMesh.setMatrixAt(placed, instanceTransform.matrix);
       }
-    } finally {
       Math.random = originalRandom;
+
+      instancedMesh.count = placed;
+      instancedMesh.instanceMatrix.needsUpdate = true;
+      map.triggerRepaint();
+
+      if (placed < activeCount) frameId = requestAnimationFrame(placeChunk);
     }
+    placeChunk();
 
-    instancedMesh.count = activeCount;
-    instancedMesh.instanceMatrix.needsUpdate = true;
-    map.triggerRepaint();
-
+    return () => cancelAnimationFrame(frameId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, surface, config.nodeName, config.count, density, up.x, up.y, up.z]);
+  }, [
+    model,
+    surface,
+    config.nodeName,
+    config.weight,
+    config.count,
+    density,
+    up.x,
+    up.y,
+    up.z,
+  ]);
 
   if (!model) return null;
 

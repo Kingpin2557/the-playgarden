@@ -4,11 +4,13 @@ import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 import PlantLayer from "../PlantLayer/PlantLayer";
 import { setGround } from "../../lib/ground";
+import { usePanBox } from "../../hooks/usePanBox";
 
 export interface PlantConfig {
   url: string;
   nodeName: string;
   count: number;
+  weight?: string; // weight-map to scatter on; defaults to nodeName
 }
 
 interface InstancesProps {
@@ -25,18 +27,23 @@ function PlantInstances({ models, density }: InstancesProps) {
   const { nodes } = useGLTF("/models/plane.glb");
   const plane = nodes.ground as THREE.Mesh;
 
-  // Spin the whole ground (plane + its scattered plants) around the vertical
-  // axis. Rotating only on Y keeps it lying flat on the map, never tilted.
-  // upX/upY/upZ toggle which axis is the model's up (Blender-style on/off); it
-  // gets aligned to the ground normal so the scattered plants stand upright.
+  // rotation: spin the ground (plane + plants) around the vertical axis.
+  // up: which model axis points up (1 = on) — the inline X/Y/Z reads like
+  //   Blender's axis toggles; it's aligned to the ground normal so plants stand.
   // Shares the "Map" Leva folder with longitude/latitude (Leva merges by name).
-  const { rotation, upX, upY, upZ } = useControls("Map", {
+  const { rotation, up } = useControls("Map", {
     rotation: { value: 0, min: 0, max: 360, step: 1 },
-    upX: { value: false, label: "up X" },
-    upY: { value: true, label: "up Y" },
-    upZ: { value: false, label: "up Z" },
+    up: { value: { x: 0, y: 1, z: 0 }, min: 0, max: 1, step: 1 },
   });
-  const up = { x: upX ? 1 : 0, y: upY ? 1 : 0, z: upZ ? 1 : 0 };
+  // Force each axis to a clean 0 or 1, whatever gets typed in the vector.
+  const upAxis = {
+    x: Math.round(up.x),
+    y: Math.round(up.y),
+    z: Math.round(up.z),
+  };
+
+  // The pannable box lives in its own hook (also in the "Map" Leva folder).
+  usePanBox(surface, rotation);
 
   // Bake the plane's own exported scale into its geometry (like the models use
   // their node scale). Baking into geometry — not the mesh scale — keeps the
@@ -71,7 +78,7 @@ function PlantInstances({ models, density }: InstancesProps) {
           surface={surface}
           density={density[config.nodeName] ?? 1}
           capacity={Math.ceil(config.count * MAX_DENSITY)}
-          up={up}
+          up={upAxis}
         />
       ))}
     </group>

@@ -9,7 +9,7 @@ function Climbhouse() {
 
   const { position, rotation } = useControls("Climbhouse", {
     position: {
-      value: { x: 8.0008544921875, y: -110.99993896484375 },
+      value: { x: -43.9991455078125, y: -141.99993896484375 },
       step: 1,
       joystick: "invertY",
     },

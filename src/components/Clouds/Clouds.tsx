@@ -5,12 +5,11 @@ import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
 import { useWeatherStore } from "../../store/weatherStore";
-import { sceneCenter } from "../../lib/mapScene";
+import { useMapStore } from "../../store/mapStore";
 
 const MAX_CLOUDS = 12;
 const PUFFS_PER_CLOUD = 5;
 const ALTITUDE = 80;
-const AREA = 300;
 const DRIFT_SPEED = 3;
 const THRESHOLD = 0.6;
 
@@ -22,7 +21,7 @@ interface Puff {
 }
 
 interface Cloud {
-  x: number;
+  x: number; // normalized [-0.5, 0.5] across the box, scaled at draw time
   z: number;
   scale: number;
   puffs: Puff[];
@@ -30,8 +29,8 @@ interface Cloud {
 
 function makeClouds(): Cloud[] {
   return Array.from({ length: MAX_CLOUDS }, () => ({
-    x: (Math.random() - 0.5) * AREA,
-    z: (Math.random() - 0.5) * AREA,
+    x: Math.random() - 0.5,
+    z: Math.random() - 0.5,
     scale: 0.8 + Math.random() * 0.8,
     puffs: Array.from({ length: PUFFS_PER_CLOUD }, () => ({
       offsetX: (Math.random() - 0.5) * 12,
@@ -42,9 +41,10 @@ function makeClouds(): Cloud[] {
   }));
 }
 
-function wrap(value: number) {
-  if (value > AREA / 2) return value - AREA;
-  if (value < -AREA / 2) return value + AREA;
+// Keep a normalized coordinate within [-0.5, 0.5] as clouds drift off one edge.
+function wrapUnit(value: number) {
+  if (value > 0.5) return value - 1;
+  if (value < -0.5) return value + 1;
   return value;
 }
 
@@ -53,6 +53,7 @@ const puffTransform = new THREE.Object3D();
 function Clouds() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
+  const boxArea = useMapStore((state) => state.boxArea);
 
   const { coverOverride } = useControls("Clouds", {
     coverOverride: { value: -1, min: -1, max: 1, step: 0.05 },
@@ -66,7 +67,8 @@ function Clouds() {
   if (!cloudsRef.current) cloudsRef.current = makeClouds();
   const clouds = cloudsRef.current;
 
-  const coverage = coverOverride >= 0 ? coverOverride : weather?.cloudCover ?? 0;
+  const coverage =
+    coverOverride >= 0 ? coverOverride : (weather?.cloudCover ?? 0);
   const cloudiness =
     coverage < THRESHOLD ? 0 : (coverage - THRESHOLD) / (1 - THRESHOLD);
   const activeCloudCount = Math.round(MAX_CLOUDS * cloudiness);
@@ -82,10 +84,10 @@ function Clouds() {
   }, [activeCloudCount, map]);
 
   useFrame((_state, deltaSeconds) => {
-    if (activeCloudCount === 0) return;
+    if (activeCloudCount === 0 || !boxArea) return;
 
-    const [centerX, centerZ] = sceneCenter(map);
-    groupRef.current.position.set(centerX, ALTITUDE, centerZ);
+    // Hover over the pan box centre, spread across its width/length.
+    groupRef.current.position.set(boxArea.x, ALTITUDE, boxArea.z);
 
     materialRef.current.color.setScalar(
       weather?.isThunder ? 0.4 : 1 - coverage * 0.35,
@@ -95,14 +97,16 @@ function Clouds() {
     let puffIndex = 0;
     for (let index = 0; index < activeCloudCount; index++) {
       const cloud = clouds[index];
-      cloud.x = wrap(cloud.x + driftX * deltaSeconds);
-      cloud.z = wrap(cloud.z + driftZ * deltaSeconds);
+      cloud.x = wrapUnit(cloud.x + (driftX / boxArea.width) * deltaSeconds);
+      cloud.z = wrapUnit(cloud.z + (driftZ / boxArea.length) * deltaSeconds);
 
+      const cloudX = cloud.x * boxArea.width;
+      const cloudZ = cloud.z * boxArea.length;
       for (const puff of cloud.puffs) {
         puffTransform.position.set(
-          cloud.x + puff.offsetX * cloud.scale,
+          cloudX + puff.offsetX * cloud.scale,
           puff.offsetY * cloud.scale,
-          cloud.z + puff.offsetZ * cloud.scale,
+          cloudZ + puff.offsetZ * cloud.scale,
         );
         puffTransform.scale.setScalar(puff.radius * cloud.scale);
         puffTransform.updateMatrix();
@@ -122,7 +126,12 @@ function Clouds() {
         frustumCulled={false}
       >
         <icosahedronGeometry args={[1, 1]} />
-        <meshStandardMaterial ref={materialRef} color="#ffffff" flatShading roughness={1} />
+        <meshStandardMaterial
+          ref={materialRef}
+          color="#ffffff"
+          flatShading
+          roughness={1}
+        />
       </instancedMesh>
     </group>
   );
