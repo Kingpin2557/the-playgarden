@@ -5,9 +5,6 @@ import { useGLTF } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
 import type { PlantConfig } from "../PlantInstances/PlantInstances";
 
-// Models come from Blender Z-up, so their up axis is +Z. Aligning that axis
-// to the ground normal makes each instance stand upright on the surface.
-const UP = new THREE.Vector3(0, 0, 1);
 const instanceTransform = new THREE.Object3D(); // reused to build each matrix
 
 // One fixed seed so the scatter looks the same on every reload.
@@ -36,11 +33,13 @@ function PlantLayer({
   surface,
   density,
   capacity,
+  up,
 }: {
   config: PlantConfig;
   surface: RefObject<THREE.Mesh>;
   density: number;
   capacity: number;
+  up: { x: number; y: number; z: number }; // model's up axis, aligned to normal
 }) {
   const map = useMap();
   const { scene } = useGLTF(config.url);
@@ -68,6 +67,7 @@ function PlantLayer({
     const random = makeRandom(SCATTER_SEED);
 
     const activeCount = Math.min(Math.round(config.count * density), capacity);
+    const upVector = new THREE.Vector3(up.x, up.y, up.z).normalize();
 
     const modelScale = new THREE.Vector3();
     model.updateWorldMatrix(true, false);
@@ -84,11 +84,16 @@ function PlantLayer({
 
       const position = new THREE.Vector3();
       const normal = new THREE.Vector3();
+      const spin = new THREE.Quaternion();
+      const align = new THREE.Quaternion();
       for (let index = 0; index < activeCount; index++) {
         sampler.sample(position, normal);
+        // spin around the up axis first, then tilt that up axis onto the
+        // ground normal — so the random spin never tips the model over.
+        spin.setFromAxisAngle(upVector, random() * Math.PI * 2);
+        align.setFromUnitVectors(upVector, normal);
         instanceTransform.position.copy(position);
-        instanceTransform.quaternion.setFromUnitVectors(UP, normal);
-        instanceTransform.rotateZ(random() * Math.PI * 2); // seeded spin
+        instanceTransform.quaternion.copy(align).multiply(spin);
         instanceTransform.scale.copy(modelScale);
         instanceTransform.updateMatrix();
         instancedMesh.setMatrixAt(index, instanceTransform.matrix);
@@ -102,7 +107,7 @@ function PlantLayer({
     map.triggerRepaint();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, surface, config.nodeName, config.count, density]);
+  }, [model, surface, config.nodeName, config.count, density, up.x, up.y, up.z]);
 
   if (!model) return null;
 

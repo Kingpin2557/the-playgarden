@@ -27,10 +27,16 @@ function PlantInstances({ models, density }: InstancesProps) {
 
   // Spin the whole ground (plane + its scattered plants) around the vertical
   // axis. Rotating only on Y keeps it lying flat on the map, never tilted.
+  // upX/upY/upZ toggle which axis is the model's up (Blender-style on/off); it
+  // gets aligned to the ground normal so the scattered plants stand upright.
   // Shares the "Map" Leva folder with longitude/latitude (Leva merges by name).
-  const { rotation } = useControls("Map", {
+  const { rotation, upX, upY, upZ } = useControls("Map", {
     rotation: { value: 0, min: 0, max: 360, step: 1 },
+    upX: { value: false, label: "up X" },
+    upY: { value: true, label: "up Y" },
+    upZ: { value: false, label: "up Z" },
   });
+  const up = { x: upX ? 1 : 0, y: upY ? 1 : 0, z: upZ ? 1 : 0 };
 
   // Bake the plane's own exported scale into its geometry (like the models use
   // their node scale). Baking into geometry — not the mesh scale — keeps the
@@ -65,6 +71,7 @@ function PlantInstances({ models, density }: InstancesProps) {
           surface={surface}
           density={density[config.nodeName] ?? 1}
           capacity={Math.ceil(config.count * MAX_DENSITY)}
+          up={up}
         />
       ))}
     </group>
