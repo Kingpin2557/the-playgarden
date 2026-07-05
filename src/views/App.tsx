@@ -2,16 +2,21 @@ import "./App.css";
 
 import WeatherWidget from "../components/WeatherWidget/WeatherWidget";
 import PoiInfo from "../components/PoiInfo/PoiInfo";
-import NavGuide from "../components/NavGuide/NavGuide";
+import Onboarding from "../components/Onboarding/Onboarding";
+import { useAppStore } from "../store/appStore";
 
 function App() {
+  const onboarded = useAppStore((state) => state.onboarded);
+
   return (
     <>
-      <div className="u-grid">
-        <WeatherWidget />
-        <PoiInfo />
-      </div>
-      <NavGuide />
+      {onboarded && (
+        <div className="u-grid">
+          <WeatherWidget />
+          <PoiInfo />
+        </div>
+      )}
+      <Onboarding />
     </>
   );
 }

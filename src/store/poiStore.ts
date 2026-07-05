@@ -1,8 +1,12 @@
 import { create } from "zustand";
 
+// Where the camera flies to for a PoI, plus that PoI's own framing.
 export interface FocusTarget {
   longitude: number;
   latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
 }
 
 interface PoiStore {

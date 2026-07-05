@@ -9,6 +9,10 @@
     --accent-2: #ff9d43;
     --accent-bg: rgba(31, 185, 112, 0.12);
     --accent-border: rgba(31, 185, 112, 0.45);
+    --warn: #b26a12;
+    --warn-bg: rgba(255, 157, 67, 0.18);
+    --danger: #d64045;
+    --danger-bg: rgba(214, 64, 69, 0.14);
     --social-bg: rgba(241, 245, 241, 0.5);
     --panel-bg: rgba(255, 255, 255, 0.82);
     --panel-border: rgba(255, 255, 255, 0.7);
@@ -49,6 +53,7 @@
     --weight-bold: 700;
 
     --z-overlay: 10;
+    --z-onboarding: 50;
     --z-flash: 9000;
     --z-welcome: 10000;
 

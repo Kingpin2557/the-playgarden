@@ -3,15 +3,13 @@ import { useControls } from "leva";
 import PlantInstances, {
   MAX_DENSITY,
 } from "../components/PlantInstances/PlantInstances";
-import Goals from "../components/Goals/Goals";
-import Swing from "../components/Swing/Swing";
-import Climbhouse from "../components/Climbhouse/Climbhouse";
+import PointOfInterest from "../components/PointOfInterest/PointOfInterest";
 import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
 
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
-import Whip from "../components/Whip/Whip";
+import { POIS } from "../pois";
 
 function Experience() {
   useWeatherUpdater();
@@ -64,10 +62,9 @@ function Experience() {
       <directionalLight position={[10, 20, 10]} intensity={2} />
       <PlantInstances models={MY_NATURE} density={density} />
       <WeatherParticles />
-      <Goals />
-      <Climbhouse />
-      <Swing />
-      <Whip />
+      {POIS.map((poi) => (
+        <PointOfInterest key={poi.name} {...poi} />
+      ))}
       <Clouds />
       <Lightning />
     </>

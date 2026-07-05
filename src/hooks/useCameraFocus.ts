@@ -54,15 +54,12 @@ function animateCamera(
 export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
   const focus = usePoiStore((state) => state.focus);
 
-  const { zoom, pitch, bearing, rotate } = useControls("Focus", {
-    zoom: { value: 21.5, min: 0, max: 25, step: 0.5 },
-    pitch: { value: 72, min: 0, max: 80, step: 1 },
-    bearing: { value: 253, min: 0, max: 360, step: 1 },
+  // Only the horizontal-rotation limit is global now; the zoom/pitch/bearing
+  // come from the focused PoI itself (via the store).
+  const { rotate } = useControls("Focus", {
     rotate: { value: 80, min: 0, max: 360, step: 5 },
   });
 
-  const framing = useRef({ zoom, pitch, bearing });
-  framing.current = { zoom, pitch, bearing };
   const rotateRef = useRef(rotate);
   rotateRef.current = rotate;
   const focusRef = useRef(focus);
@@ -76,7 +73,8 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
     if (!map) return;
     if (focus && !homeView.current) homeView.current = readCamera(map);
 
-    const view = focus ? { ...focus, ...framing.current } : homeView.current;
+    // focus already carries longitude/latitude/zoom/pitch/bearing per PoI.
+    const view = focus ?? homeView.current;
     if (!view) return;
 
     animateCamera(map, view, tween);
@@ -85,25 +83,20 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
     };
   }, [focus, mapRef]);
 
-  useEffect(() => {
-    const map = mapRef.current?.getMap();
-    if (!map || !focusRef.current) return;
-    animateCamera(map, { ...focusRef.current, zoom, pitch, bearing }, tween);
-  }, [zoom, pitch, bearing, mapRef]);
-
-  // Limit the horizontal rotation to a small arc around the focus bearing,
+  // Limit the horizontal rotation to a small arc around the PoI's bearing,
   // but only for user drags while a PoI is focused.
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
 
     const clampBearing = (event: MapLibreEvent) => {
-      if (!focusRef.current || !event.originalEvent) return;
+      const focused = focusRef.current;
+      if (!focused || !event.originalEvent) return;
       const limit = rotateRef.current / 2;
-      const offset = normalizeAngle(map.getBearing() - framing.current.bearing);
+      const offset = normalizeAngle(map.getBearing() - focused.bearing);
       const clamped = Math.max(-limit, Math.min(limit, offset));
       if (Math.abs(clamped - offset) > 0.01) {
-        map.setBearing(framing.current.bearing + clamped);
+        map.setBearing(focused.bearing + clamped);
       }
     };
 

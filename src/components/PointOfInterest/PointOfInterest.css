@@ -26,4 +26,24 @@
         border-color: var(--accent);
         color: #fff;
     }
+
+    /* Onboarding highlight: pulse to draw the eye to a sign. */
+    &.poi-label--hint {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        animation: poi-hint-pulse 1.3s ease-in-out infinite;
+    }
+}
+
+@keyframes poi-hint-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 var(--accent-border);
+    }
+    50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 0 10px transparent;
+    }
 }
