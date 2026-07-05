@@ -31,7 +31,7 @@ export const POIS: PoiConfig[] = [
     view: { zoom: 23.5, pitch: 72, bearing: 235 },
   },
   {
-    name: "Swing",
+    name: "The Swing",
     url: "/models/swing.glb",
     folder: "Swing",
     position: { x: -19.9991455078125, y: -156.99993896484375 },
