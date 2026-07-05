@@ -9,6 +9,7 @@ export interface PoiConfig {
   position: { x: number; y: number };
   rotation: number;
   view: { zoom: number; pitch: number; bearing: number };
+  game?: boolean; // spawn the kick-about ball game when this PoI is focused
 }
 
 export const POIS: PoiConfig[] = [
@@ -19,6 +20,7 @@ export const POIS: PoiConfig[] = [
     position: { x: -15.99914550781255, y: -76.99993896484375 },
     rotation: 14,
     view: { zoom: 21.5, pitch: 72, bearing: 253 },
+    game: true,
   },
   {
     name: "The Seesaw",

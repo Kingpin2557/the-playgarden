@@ -35,6 +35,7 @@ interface PointOfInterestProps {
   position: { x: number; y: number };
   rotation: number;
   view: { zoom: number; pitch: number; bearing: number }; // focus viewpoint
+  game?: boolean; // handled in Experience: spawns the ball game while focused
 }
 
 function PointOfInterest({
@@ -55,14 +56,19 @@ function PointOfInterest({
 
   // position/rotation place the model; zoom/pitch/bearing are the focus shot —
   // tune bearing to angle the camera past any tree in the way.
-  const { position: placement, rotation: spin, zoom, pitch, bearing } =
-    useControls(folder, {
-      position: { value: position, step: 1, joystick: "invertY" },
-      rotation: { value: rotation, min: 0, max: 360, step: 1 },
-      zoom: { value: view.zoom, min: 0, max: 25, step: 0.5 },
-      pitch: { value: view.pitch, min: 0, max: 80, step: 1 },
-      bearing: { value: view.bearing, min: 0, max: 360, step: 1 },
-    });
+  const {
+    position: placement,
+    rotation: spin,
+    zoom,
+    pitch,
+    bearing,
+  } = useControls(folder, {
+    position: { value: position, step: 1, joystick: "invertY" },
+    rotation: { value: rotation, min: 0, max: 360, step: 1 },
+    zoom: { value: view.zoom, min: 0, max: 25, step: 0.5 },
+    pitch: { value: view.pitch, min: 0, max: 80, step: 1 },
+    bearing: { value: view.bearing, min: 0, max: 360, step: 1 },
+  });
 
   const [labelPosition, setLabelPosition] = useState<[number, number, number]>([
     0, 2, 0,

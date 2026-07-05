@@ -21,15 +21,29 @@ import Experience from "./views/Experience";
 
 const CAMERA_START = { zoom: 24, pitch: 74, bearing: 142 };
 
-// Global (unfocused) camera limits: explore a little, but don't zoom out to the
-// whole world or wander off the park. The PoI fly-to isn't bounded by these.
-// Low floor: maxBounds (the plane + margin) is what actually stops zoom-out,
-// which lands at "whole plane in view" — and you can never see past the park.
 const GLOBAL_MIN_ZOOM = 15;
 const GLOBAL_MAX_ZOOM = 20; // global zoom-in stops here
 const FOCUS_MAX_ZOOM = 22; // the PoI fly-to needs to go closer than global
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+const FOCUS_PAN = 0.0003; // ~20-30 m of leeway around a focused PoI
+
+type Bounds = [number, number, number, number]; // [west, south, east, north]
+
+// A small box around the focused PoI, so panning while focused is fenced to just
+// enough room to follow the ball.
+function getFocusBounds(
+  focus: { longitude: number; latitude: number } | null,
+): Bounds | undefined {
+  if (!focus) return undefined;
+  return [
+    focus.longitude - FOCUS_PAN,
+    focus.latitude - FOCUS_PAN,
+    focus.longitude + FOCUS_PAN,
+    focus.latitude + FOCUS_PAN,
+  ];
+}
 
 function Root() {
   const mapRef = useRef<MapRef>(null);
@@ -55,8 +69,11 @@ function Root() {
   useCameraFocus(mapRef); // flies to a PoI when one is focused
   useAudio();
 
-  // While focused on a PoI the camera is fixed (no dragging/orbiting/zooming).
-  const isFocused = usePoiStore((state) => state.focus !== null);
+  // While focused on a PoI, zoom/rotate are locked but we allow a little panning
+  // (fenced to a small box around the PoI) so you can follow the action.
+  const focus = usePoiStore((state) => state.focus);
+  const isFocused = focus !== null;
+  const focusBounds = getFocusBounds(focus);
 
   // Panning is fenced to the plane's bounding box (+20%), measured in the scene.
   const panBounds = useMapStore((state) => state.panBounds);
@@ -76,9 +93,9 @@ function Root() {
         maxPitch={80}
         minZoom={GLOBAL_MIN_ZOOM}
         maxZoom={isFocused ? FOCUS_MAX_ZOOM : GLOBAL_MAX_ZOOM}
-        maxBounds={isFocused ? undefined : (panBounds ?? undefined)}
+        maxBounds={isFocused ? focusBounds : (panBounds ?? undefined)}
         scrollZoom={!isFocused}
-        dragPan={!isFocused}
+        dragPan={true}
         dragRotate={true}
         pitchWithRotate={false}
         touchPitch={false}
@@ -96,11 +113,7 @@ function Root() {
         style={{ width: "100vw", height: "100vh" }}
       >
         <Buildings />
-        <Canvas
-          longitude={longitude}
-          latitude={latitude}
-          onPointerMissed={() => usePoiStore.getState().clear()}
-        >
+        <Canvas longitude={longitude} latitude={latitude}>
           <Experience />
         </Canvas>
       </Map>

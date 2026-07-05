@@ -166,8 +166,12 @@ div .leva-c-hBtFDW .leva-c-hBtFDW-hTGpNn-cv .leva-c-hBtFDW-gOvGdg-cv {
     position: fixed;
     inset: 0;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(1, 1fr);
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+        "weather score info"
+        ".       .     .   "
+        ".       hud   .   ";
     gap: var(--space-2);
     padding: var(--ui-inset);
 
@@ -176,16 +180,31 @@ div .leva-c-hBtFDW .leva-c-hBtFDW-hTGpNn-cv .leva-c-hBtFDW-gOvGdg-cv {
 
     & > * {
         pointer-events: auto;
-        align-self: start;
     }
+}
 
-    & > :first-child {
-        justify-self: start;
-    }
+.u-grid > .weather-widget {
+    grid-area: weather;
+    justify-self: start;
+    align-self: start;
+}
 
-    & > :last-child:not(:first-child) {
-        justify-self: end;
-    }
+.u-grid > .goal-score {
+    grid-area: score;
+    justify-self: center;
+    align-self: start;
+}
+
+.u-grid > .poi-info {
+    grid-area: info;
+    justify-self: end;
+    align-self: start;
+}
+
+.u-grid > .goal-hud {
+    grid-area: hud;
+    justify-self: center;
+    align-self: end;
 }
 
 .fit {

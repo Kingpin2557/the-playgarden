@@ -7,12 +7,20 @@ import PointOfInterest from "../components/PointOfInterest/PointOfInterest";
 import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
+import GoalGame from "../components/GoalGame/GoalGame";
 
 import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
+import { usePoiStore } from "../store/poiStore";
 import { POIS } from "../pois";
+
+// The one PoI that carries the ball game (the goals).
+const gamePoi = POIS.find((poi) => poi.game);
 
 function Experience() {
   useWeatherUpdater();
+
+  // Only run the physics world while its PoI is focused.
+  const gameActive = usePoiStore((state) => state.activeName === gamePoi?.name);
 
   const MY_NATURE = [
     {
@@ -65,6 +73,13 @@ function Experience() {
       {POIS.map((poi) => (
         <PointOfInterest key={poi.name} {...poi} />
       ))}
+      {gameActive && gamePoi && (
+        <GoalGame
+          center={{ x: gamePoi.position.x, z: gamePoi.position.y }}
+          url={gamePoi.url}
+          rotation={gamePoi.rotation}
+        />
+      )}
       <Clouds />
       <Lightning />
     </>
