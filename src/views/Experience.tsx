@@ -4,7 +4,7 @@ import PlantInstances, {
   MAX_DENSITY,
 } from "../components/PlantInstances/PlantInstances";
 import PointOfInterest from "../components/PointOfInterest/PointOfInterest";
-import WeatherParticles from "../components/WeatherParticles/WeatherParticles";
+import WeatherParticles from "../components/weatherparticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
 import Lightning from "../components/Lightning/Lightning";
 import GoalGame from "../components/GoalGame/GoalGame";

@@ -1,6 +1,6 @@
 import "./App.css";
 
-import WeatherWidget from "../components/WeatherWidget/WeatherWidget";
+import WeatherWidget from "../components/weatherwidget/WeatherWidget";
 import PoiInfo from "../components/PoiInfo/PoiInfo";
 import Onboarding from "../components/Onboarding/Onboarding";
 import GoalScore from "../components/GoalGame/GoalScore";
