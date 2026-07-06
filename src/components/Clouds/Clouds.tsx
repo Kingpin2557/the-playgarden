@@ -9,9 +9,10 @@ import { useMapStore } from "../../store/mapStore";
 
 const MAX_CLOUDS = 12;
 const PUFFS_PER_CLOUD = 5;
-const ALTITUDE = 80;
+const ALTITUDE = 15; // just above the tree canopy
 const DRIFT_SPEED = 3;
-const THRESHOLD = 0.6;
+const SPREAD = 2.4; // cloud field size relative to the pan box
+const THRESHOLD = 0.2;
 
 interface Puff {
   offsetX: number;
@@ -34,7 +35,7 @@ function makeClouds(): Cloud[] {
     scale: 0.8 + Math.random() * 0.8,
     puffs: Array.from({ length: PUFFS_PER_CLOUD }, () => ({
       offsetX: (Math.random() - 0.5) * 12,
-      offsetY: (Math.random() - 0.5) * 3,
+      offsetY: (Math.random() - 0.5) * 1.5,
       offsetZ: (Math.random() - 0.5) * 8,
       radius: 2 + Math.random() * 3,
     })),
@@ -55,7 +56,8 @@ function Clouds() {
   const weather = useWeatherStore((state) => state.weather);
   const boxArea = useMapStore((state) => state.boxArea);
 
-  const { coverOverride } = useControls("Weather", {
+  const { showClouds, coverOverride } = useControls("Weather", {
+    showClouds: { value: true, label: "clouds" },
     coverOverride: { value: -1, min: -1, max: 1, step: 0.05, label: "cloud cover" },
   });
 
@@ -71,7 +73,7 @@ function Clouds() {
     coverOverride >= 0 ? coverOverride : (weather?.cloudCover ?? 0);
   const cloudiness =
     coverage < THRESHOLD ? 0 : (coverage - THRESHOLD) / (1 - THRESHOLD);
-  const activeCloudCount = Math.round(MAX_CLOUDS * cloudiness);
+  const activeCloudCount = showClouds ? Math.round(MAX_CLOUDS * cloudiness) : 0;
 
   const windAngle = ((weather?.windDirection ?? 0) * Math.PI) / 180;
   const windSpeed = DRIFT_SPEED * (1 + (weather?.windSpeed ?? 0) / 20);
@@ -97,11 +99,13 @@ function Clouds() {
     let puffIndex = 0;
     for (let index = 0; index < activeCloudCount; index++) {
       const cloud = clouds[index];
-      cloud.x = wrapUnit(cloud.x + (driftX / boxArea.width) * deltaSeconds);
-      cloud.z = wrapUnit(cloud.z + (driftZ / boxArea.length) * deltaSeconds);
+      const fieldWidth = boxArea.width * SPREAD;
+      const fieldLength = boxArea.length * SPREAD;
+      cloud.x = wrapUnit(cloud.x + (driftX / fieldWidth) * deltaSeconds);
+      cloud.z = wrapUnit(cloud.z + (driftZ / fieldLength) * deltaSeconds);
 
-      const cloudX = cloud.x * boxArea.width;
-      const cloudZ = cloud.z * boxArea.length;
+      const cloudX = cloud.x * fieldWidth;
+      const cloudZ = cloud.z * fieldLength;
       for (const puff of cloud.puffs) {
         puffTransform.position.set(
           cloudX + puff.offsetX * cloud.scale,

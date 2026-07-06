@@ -9,6 +9,7 @@ import PlantInstances, {
 import PointOfInterest from "../components/PointOfInterest/PointOfInterest";
 import WeatherParticles from "../components/weatherparticles/WeatherParticles";
 import Clouds from "../components/Clouds/Clouds";
+import GroundMist from "../components/GroundMist/GroundMist";
 import Lightning from "../components/Lightning/Lightning";
 import GoalGame from "../components/GoalGame/GoalGame";
 
@@ -71,6 +72,7 @@ function Experience() {
         />
       )}
       <Clouds />
+      <GroundMist />
       <Lightning />
     </>
   );

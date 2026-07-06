@@ -6,6 +6,7 @@ export interface Weather {
   cloudCover: number;
   isSnow: boolean;
   isThunder: boolean;
+  isFog: boolean;
   icon: string;
   label: string;
 }
@@ -45,6 +46,9 @@ export async function fetchWeather(
       isSnow:
         (current.snowfall ?? 0) > 0 || (current.temperature_2m ?? 99) <= 0,
       isThunder: (current.weather_code ?? 0) >= 95,
+      isFog:
+        (current.weather_code ?? 0) >= 45 &&
+        (current.weather_code ?? 0) <= 48,
       ...describeWeather(current.weather_code ?? 0),
     };
   } catch {

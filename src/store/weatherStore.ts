@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import { fetchWeather, type Weather } from "../lib/weatherApi";
 
-export type WeatherMode = "auto" | "rain" | "snow";
+export type WeatherMode = "auto" | "rain" | "snow" | "fog";
 
 interface WeatherState {
   weather: Weather | null;

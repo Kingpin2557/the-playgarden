@@ -32,7 +32,7 @@ function WeatherParticles() {
 
   // height is the "roof" over the pan box that rain/snow falls from.
   const { mode, height } = useControls("Weather", {
-    mode: { value: "auto", options: ["auto", "rain", "snow"] },
+    mode: { value: "auto", options: ["auto", "rain", "snow", "fog"] },
     height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
   });
   useEffect(() => {
@@ -60,7 +60,11 @@ function WeatherParticles() {
   const isSnow = mode === "snow" || (mode === "auto" && !!weather?.isSnow);
   const appearance = isSnow ? SNOW : RAIN;
   const intensity =
-    mode === "auto" ? Math.min((weather?.precipitation ?? 0) / 5, 1) : 1;
+    mode === "auto"
+      ? Math.min((weather?.precipitation ?? 0) / 5, 1)
+      : mode === "fog"
+        ? 0
+        : 1;
   const activeCount = Math.floor(MAX_PARTICLES * intensity);
 
   const windAngle = ((weather?.windDirection ?? 0) * Math.PI) / 180;
