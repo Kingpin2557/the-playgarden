@@ -7,10 +7,12 @@ import GoalScore from "../components/GoalGame/GoalScore";
 import GoalHud from "../components/GoalGame/GoalHud";
 import { useAppStore } from "../store/appStore";
 import { usePoiStore } from "../store/poiStore";
+import { useGameStore } from "../store/gameStore";
 
 function App() {
   const onboarded = useAppStore((state) => state.onboarded);
   const activeName = usePoiStore((state) => state.activeName);
+  const playing = useGameStore((state) => state.playing);
   const inGoals = activeName === "Goals";
 
   return (
@@ -18,7 +20,7 @@ function App() {
       {onboarded && (
         <div className="u-grid">
           <WeatherWidget />
-          {inGoals && <GoalScore />}
+          {inGoals && playing && <GoalScore />}
           <PoiInfo />
           {inGoals && <GoalHud />}
         </div>

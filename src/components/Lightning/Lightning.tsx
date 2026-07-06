@@ -15,7 +15,9 @@ const FADE_SPEED = 12;
 function Lightning() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
-  const { forceLightning } = useControls("Lightning", { forceLightning: false });
+  const { forceLightning } = useControls("Weather", {
+    forceLightning: { value: false, label: "force lightning" },
+  });
 
   const lightRef = useRef<THREE.DirectionalLight>(null!);
   const flashBrightness = useRef(0);

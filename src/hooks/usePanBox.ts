@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useMap, vector3ToCoords } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
-import { COORDS } from "../coords";
+import { COORDS } from "../constants";
 import { useMapStore } from "../store/mapStore";
 
 // Owns the pannable box: a boxWidth × boxLength rectangle (metres) centred on the

@@ -1,5 +1,6 @@
 import "./PoiInfo.css";
 import { usePoiStore } from "../../store/poiStore";
+import { useGameStore } from "../../store/gameStore";
 import { useWeatherStore, type WeatherMode } from "../../store/weatherStore";
 import type { Weather } from "../../lib/weatherApi";
 
@@ -98,6 +99,8 @@ function PoiInfo() {
   const activePoi = usePoiStore((state) => state.activeName);
   const weather = useWeatherStore((state) => state.weather);
   const mode = useWeatherStore((state) => state.mode);
+  const playing = useGameStore((state) => state.playing);
+  const startGame = useGameStore((state) => state.startGame);
   if (!activePoi) return null;
 
   const details = POI_INFO[activePoi];
@@ -138,6 +141,12 @@ function PoiInfo() {
           </div>
         ))}
       </div>
+
+      {activePoi === "Goals" && !playing && (
+        <button className="poi-info__play" onClick={startGame}>
+          ▶ Play game
+        </button>
+      )}
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import type { Map, MapLibreEvent } from "maplibre-gl";
 import type { MapRef } from "react-map-gl/maplibre";
-import { useControls } from "leva";
 import gsap from "gsap";
 
 import { usePoiStore } from "../store/poiStore";
@@ -25,6 +24,9 @@ function readCamera(map: Map): CameraView {
     bearing: map.getBearing(),
   };
 }
+
+// How far you can swivel (degrees, total arc) around a focused PoI's bearing.
+const ROTATE_ARC = 80;
 
 function normalizeAngle(angle: number) {
   return ((((angle + 180) % 360) + 360) % 360) - 180;
@@ -54,14 +56,6 @@ function animateCamera(
 export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
   const focus = usePoiStore((state) => state.focus);
 
-  // Only the horizontal-rotation limit is global now; the zoom/pitch/bearing
-  // come from the focused PoI itself (via the store).
-  const { rotate } = useControls("Focus", {
-    rotate: { value: 80, min: 0, max: 360, step: 5 },
-  });
-
-  const rotateRef = useRef(rotate);
-  rotateRef.current = rotate;
   const focusRef = useRef(focus);
   focusRef.current = focus;
 
@@ -92,7 +86,7 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
     const clampBearing = (event: MapLibreEvent) => {
       const focused = focusRef.current;
       if (!focused || !event.originalEvent) return;
-      const limit = rotateRef.current / 2;
+      const limit = ROTATE_ARC / 2;
       const offset = normalizeAngle(map.getBearing() - focused.bearing);
       const clamped = Math.max(-limit, Math.min(limit, offset));
       if (Math.abs(clamped - offset) > 0.01) {

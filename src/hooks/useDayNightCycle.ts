@@ -4,6 +4,7 @@ import type { MapRef } from "react-map-gl/maplibre";
 import { useControls } from "leva";
 
 import { useWeatherStore } from "../store/weatherStore";
+import { dayNight } from "../lib/dayNight";
 
 const DAY = { sky: "#87ceeb", horizon: "#cfe8ff", fog: "#eaf6ff" };
 const NIGHT = { sky: "#0b1026", horizon: "#1b2540", fog: "#0e1630" };
@@ -42,14 +43,18 @@ const currentLocalHour = () => {
 export function useDayNightCycle(mapRef: RefObject<MapRef | null>) {
   const weather = useWeatherStore((state) => state.weather);
 
-  const { mode, hour } = useControls("Sky", {
-    mode: { value: "auto", options: ["auto", "manual"] },
+  const { daynight: mode, hour } = useControls("Weather", {
+    daynight: {
+      value: "auto",
+      options: ["auto", "manual"],
+      label: "day / night",
+    },
     hour: {
       value: 12,
       min: 0,
       max: 24,
       step: 0.1,
-      render: (get) => get("Sky.mode") === "manual",
+      render: (get) => get("Weather.daynight") === "manual",
     },
   });
 
@@ -62,9 +67,6 @@ export function useDayNightCycle(mapRef: RefObject<MapRef | null>) {
 
   useEffect(() => {
     const updateSky = (hourOfDay: number) => {
-      const map = mapRef.current?.getMap();
-      if (!map || !map.isStyleLoaded()) return;
-
       const elevation = Math.sin(((hourOfDay - 6) / 12) * Math.PI);
       const dayAmount = Math.max(0, elevation);
       const twilight = Math.max(0, 1 - Math.abs(elevation) * 3);
@@ -73,6 +75,13 @@ export function useDayNightCycle(mapRef: RefObject<MapRef | null>) {
       const gloom = current?.isThunder
         ? 0.85
         : Math.min(current?.cloudCover ?? 0, 1) * 0.6;
+
+      // Publish so the R3F scene lights can darken with the sky.
+      dayNight.dayAmount = dayAmount;
+      dayNight.gloom = gloom;
+
+      const map = mapRef.current?.getMap();
+      if (!map || !map.isStyleLoaded()) return;
 
       map.setSky({
         "sky-color": blend(NIGHT.sky, DAY.sky, DUSK.sky, CLOUDY.sky, dayAmount, twilight * 0.6, gloom),

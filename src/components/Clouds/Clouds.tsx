@@ -55,8 +55,8 @@ function Clouds() {
   const weather = useWeatherStore((state) => state.weather);
   const boxArea = useMapStore((state) => state.boxArea);
 
-  const { coverOverride } = useControls("Clouds", {
-    coverOverride: { value: -1, min: -1, max: 1, step: 0.05 },
+  const { coverOverride } = useControls("Weather", {
+    coverOverride: { value: -1, min: -1, max: 1, step: 0.05, label: "cloud cover" },
   });
 
   const groupRef = useRef<THREE.Group>(null!);

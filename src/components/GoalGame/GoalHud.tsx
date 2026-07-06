@@ -1,8 +1,12 @@
 import "./GoalHud.css";
 import { useGameStore } from "../../store/gameStore";
 
-// Bottom-centre "how to play" card + reset.
+// Bottom-centre control card. Before playing it offers Start; while playing it
+// offers Reset (0 - 0 + ball to origin) and Stop (leave the game).
 function GoalHud() {
+  const playing = useGameStore((state) => state.playing);
+  const startGame = useGameStore((state) => state.startGame);
+  const stopGame = useGameStore((state) => state.stopGame);
   const resetGame = useGameStore((state) => state.resetGame);
 
   return (
@@ -13,13 +17,28 @@ function GoalHud() {
       </div>
 
       <p className="goal-hud__hint">
-        Click the ball and drag to aim — the further you drag, the harder the
-        shot. Release to fire it into a goal.
+        {playing
+          ? "Click the ball and drag to aim — the further you drag, the harder the shot. Release to fire it into a goal."
+          : "Ready for a kick-about? Press start, or just click the ball, to play."}
       </p>
 
-      <button className="goal-hud__reset" onClick={resetGame}>
-        Reset match
-      </button>
+      {playing ? (
+        <div className="goal-hud__buttons">
+          <button
+            className="goal-hud__btn goal-hud__btn--ghost"
+            onClick={resetGame}
+          >
+            Reset game
+          </button>
+          <button className="goal-hud__btn" onClick={stopGame}>
+            Stop game
+          </button>
+        </div>
+      ) : (
+        <button className="goal-hud__btn" onClick={startGame}>
+          Start game
+        </button>
+      )}
     </div>
   );
 }

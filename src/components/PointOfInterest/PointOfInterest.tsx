@@ -6,9 +6,10 @@ import { useMap, vector3ToCoords } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
 import "./PointOfInterest.css";
-import { COORDS } from "../../coords";
+import { COORDS } from "../../constants";
 import { usePoiStore } from "../../store/poiStore";
 import { useAppStore } from "../../store/appStore";
+import { useGameStore } from "../../store/gameStore";
 import { getGround } from "../../lib/ground";
 
 const LABEL_MARGIN = 1;
@@ -45,6 +46,7 @@ function PointOfInterest({
   position,
   rotation,
   view,
+  game,
 }: PointOfInterestProps) {
   const { scene } = useGLTF(url);
   const ref = useRef<THREE.Object3D>(null!);
@@ -53,6 +55,8 @@ function PointOfInterest({
   const clear = usePoiStore((state) => state.clear);
   const isActive = usePoiStore((state) => state.activeName === name);
   const isHinted = useAppStore((state) => state.hintPoi === name);
+  const setGoalPlacement = useGameStore((state) => state.setGoalPlacement);
+  const playing = useGameStore((state) => state.playing);
 
   // position/rotation place the model; zoom/pitch/bearing are the focus shot —
   // tune bearing to angle the camera past any tree in the way.
@@ -69,6 +73,12 @@ function PointOfInterest({
     pitch: { value: view.pitch, min: 0, max: 80, step: 1 },
     bearing: { value: view.bearing, min: 0, max: 360, step: 1 },
   });
+
+  // Share the goal PoI's live placement so the physics goals overlap it exactly.
+  useEffect(() => {
+    if (!game) return;
+    setGoalPlacement({ x: placement.x, z: placement.y, rotation: spin });
+  }, [game, placement.x, placement.y, spin, setGoalPlacement]);
 
   const [labelPosition, setLabelPosition] = useState<[number, number, number]>([
     0, 2, 0,
@@ -180,11 +190,13 @@ function PointOfInterest({
         onClick={onModelClick}
         rotation={[0, (spin * Math.PI) / 180, 0]}
       />
-      <Html position={labelPosition} center>
-        <button onClick={toggle} className={labelClass}>
-          {isActive ? "← Back" : name}
-        </button>
-      </Html>
+      {!(isActive && playing) && (
+        <Html position={labelPosition} center>
+          <button onClick={toggle} className={labelClass}>
+            {isActive ? "← Back" : name}
+          </button>
+        </Html>
+      )}
     </group>
   );
 }
