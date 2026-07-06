@@ -51,7 +51,7 @@ const POI_INFO: Record<string, PoiDetails> = {
       { label: "Best for", value: "Ages 6+" },
     ],
   },
-  Seesaw: {
+  "The Seesaw": {
     title: "The Seesaw",
     description:
       "A classic two-seat seesaw. Grab a friend, sit on either end, and take turns pushing off the ground to bob up and down.",
@@ -79,7 +79,7 @@ const POI_INFO: Record<string, PoiDetails> = {
       { label: "Best for", value: "Ages 4+" },
     ],
   },
-  Swing: {
+  "The Swing": {
     title: "The Swings",
     description:
       "A row of classic swings. Kick your legs to build height and see how far you can go — gentle for little ones, higher for the brave.",
