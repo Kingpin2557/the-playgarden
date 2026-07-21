@@ -19,7 +19,6 @@ interface GoalBallProps {
   setCursor: (value: string) => void;
 }
 
-// The kickable ball, plus the yellow aim line shown while you're dragging it.
 function GoalBall({
   ballRef,
   ballMeshRef,

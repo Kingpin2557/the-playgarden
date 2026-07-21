@@ -1,13 +1,5 @@
-// Pure math for the goals mini-game — no React dependency. Two halves:
-// geometry (the ball texture + goal boxes, built once when the model loads)
-// and layout (where everything sits in world space, recomputed as the
-// model's live placement or the tuning sliders change).
 import * as THREE from "three";
 
-// ---- Geometry --------------------------------------------------------------
-
-// A simple black-and-white ball texture, drawn once on a canvas: white base with
-// a handful of dark pentagons scattered on it.
 function makeSoccerTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 256;
@@ -37,12 +29,9 @@ function makeSoccerTexture() {
 
 export const soccerTexture = makeSoccerTexture();
 
-// One goal's collider: a simple box, not an exact copy of the net's shape —
-// a box catches the ball just as well and is far simpler than the model's
-// real geometry.
 export interface GoalBox {
-  center: [number, number, number]; // local-space centre (same frame the RigidBody places into the world)
-  halfExtents: [number, number, number]; // CuboidCollider's args
+  center: [number, number, number];
+  halfExtents: [number, number, number];
 }
 
 export type Split = {
@@ -51,8 +40,6 @@ export type Split = {
   size: { width: number; depth: number; height: number; minY: number };
 };
 
-// Look at the model's combined geometry, split it down the middle (left
-// goal / right goal), and return each half's bounding box.
 export function splitGoals(scene: THREE.Object3D): Split | null {
   const clone = scene.clone(true);
   clone.updateMatrixWorld(true);
@@ -101,14 +88,11 @@ export function splitGoals(scene: THREE.Object3D): Split | null {
   };
 }
 
-// Only the ball should trip a goal sensor — not the walls or the goal itself.
 export function ballEntered(payload: {
   other: { rigidBodyObject?: THREE.Object3D | null };
 }) {
   return payload.other.rigidBodyObject?.userData?.ball === true;
 }
-
-// ---- Layout -----------------------------------------------------------------
 
 export interface GoalLayoutInputs {
   center: { x: number; z: number };
@@ -124,7 +108,6 @@ export interface GoalLayoutInputs {
 }
 
 export interface GoalLayout {
-  // Everything GoalPitch needs, ready to spread straight onto it.
   pitch: {
     boxWX: number;
     boxWZ: number;
@@ -134,18 +117,14 @@ export interface GoalLayout {
     wallHeight: number;
     wallThickness: number;
   };
-  // Everything GoalPosts needs, ready to spread straight onto it.
   posts: {
     position: [number, number, number];
     rotationY: number;
     goalKey: string;
   };
-  // Everything GoalBall needs beyond its refs/radius/handlers.
   ball: {
     position: [number, number, number];
   };
-  // What GoalGame itself computes with directly (the play-bounds effect,
-  // the ball-reset effect, and the aim/shoot hook).
   boxWX: number;
   boxWZ: number;
   halfX: number;
@@ -158,13 +137,9 @@ export interface GoalLayout {
 
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
 
-// Scratch objects reused across calls — rotateAround uses THREE's usual
-// counter-clockwise convention, so the angle is negated to match this app's
-// existing "positive angle spins the model this way" convention.
 const rotationPoint = new THREE.Vector2();
 const ORIGIN = new THREE.Vector2(0, 0);
 
-// Rotate a local (x, z) offset around a centre into world XZ.
 export function toWorld(
   centerX: number,
   centerZ: number,
@@ -176,9 +151,6 @@ export function toWorld(
   return [centerX + rotationPoint.x, centerZ + rotationPoint.y];
 }
 
-// Where everything in the ball game sits in world (scene metre) space: the
-// walls, the goals, and the ball's start spot — all derived from the visible
-// goal model's live placement so the physics overlaps exactly what you see.
 export function computeGoalLayout({
   center,
   rotation,
@@ -203,17 +175,13 @@ export function computeGoalLayout({
   const cz = goalPlacement?.z ?? center.z;
   const spinY = ((goalPlacement?.rotation ?? rotation) * Math.PI) / 180;
 
-  // The box (walls + ground + ball) can be nudged off the model centre via the
-  // Leva "box center" offset; the goals + scoring stay locked to the model.
   const [boxWX, boxWZ] = toWorld(cx, cz, spinY, boxCenter.x, boxCenter.z);
 
-  // The goal colliders (+ their visualisation) can be moved/scaled for tuning.
   const [goalWX, goalWZ] = toWorld(cx, cz, spinY, goalsOffset.x, goalsOffset.z);
   const goalPos: [number, number, number] = [goalWX, restY, goalWZ];
   const goalRotY = spinY + (goalsRotate * Math.PI) / 180;
   const goalKey = goalsOffset.x + "_" + goalsOffset.z + "_" + goalsRotate;
 
-  // Keep the ball start inside the walls, then place it relative to the box.
   const sx = clamp(ballStart.x, halfX - ballRadius - wallThickness);
   const sz = clamp(ballStart.z, halfZ - ballRadius - wallThickness);
   const [startWX, startWZ] = toWorld(boxWX, boxWZ, spinY, sx, sz);

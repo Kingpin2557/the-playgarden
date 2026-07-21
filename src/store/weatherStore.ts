@@ -25,11 +25,6 @@ export const useWeatherStore = create<WeatherState>((set) => ({
   },
 }));
 
-// Derived weather facts, shared by anything that needs to know what's
-// actually happening right now. A Leva mode override always wins over the
-// real forecast; only "auto" looks at the forecast at all.
-
-// Whether it's forced or actually snowing right now.
 export function isSnowing(mode: WeatherMode, weather: Weather | null): boolean {
   switch (mode) {
     case "snow":
@@ -41,13 +36,10 @@ export function isSnowing(mode: WeatherMode, weather: Weather | null): boolean {
   }
 }
 
-// Whether it's forced or actually thundering right now.
 export function isThundering(mode: WeatherMode, weather: Weather | null): boolean {
   return mode === "thunder" || (mode === "auto" && !!weather?.isThunder);
 }
 
-// Whether it's forced or actually raining right now — a thunderstorm brings
-// its own rain along with it.
 export function isRaining(mode: WeatherMode, weather: Weather | null): boolean {
   switch (mode) {
     case "rain":
@@ -60,8 +52,6 @@ export function isRaining(mode: WeatherMode, weather: Weather | null): boolean {
   }
 }
 
-// 0..1: how heavy the rain/snow particles should fall. Forced modes always
-// show at full intensity; "auto" scales with the real forecast.
 export function precipitationIntensity(
   mode: WeatherMode,
   weather: Weather | null,

@@ -14,9 +14,6 @@ import GoalPitch from "../GoalPitch/GoalPitch";
 import GoalPosts from "../GoalPosts/GoalPosts";
 import GoalBall from "../GoalBall/GoalBall";
 
-// center is the goals' position in scene metres (world XZ); rotation matches the
-// placed model. The pitch is built inside one rotated body, so the two goals sit
-// along the model's long (local X) axis just like what you see.
 interface GoalGameProps {
   center: { x: number; z: number };
   url: string;
@@ -40,13 +37,11 @@ function GoalGame({ center, url, rotation }: GoalGameProps) {
   const ballRef = useRef<RapierRigidBody>(null!);
   const ballMeshRef = useRef<Mesh>(null!);
 
-  // Build the two goal colliders + measurements from the model, once.
   const [goals, setGoals] = useState<Split | null>(null);
   useEffect(() => {
     setGoals(splitGoals(scene));
   }, [scene]);
 
-  // Fresh scoreboard when you enter; stop the game when you leave the PoI.
   useEffect(() => {
     resetGame();
     return () => stopGame();
@@ -76,10 +71,6 @@ function GoalGame({ center, url, rotation }: GoalGameProps) {
     debug: { value: BALL_GAME.debug, label: "show colliders" },
   });
 
-  // Where everything (walls, goals, ball start) sits in world space, based on
-  // the visible goal model's live placement. pitch/posts/ball are pre-shaped
-  // to spread straight onto the matching child; the rest is what GoalGame
-  // itself computes with below.
   const {
     pitch,
     posts,
@@ -118,8 +109,6 @@ function GoalGame({ center, url, rotation }: GoalGameProps) {
       maxPull,
     });
 
-  // Publish the play-box footprint (the walls) as a lng/lat rectangle so the map
-  // can fence panning to it while the game runs.
   useEffect(() => {
     const corners: [number, number][] = [
       [halfX, halfZ],
@@ -146,10 +135,8 @@ function GoalGame({ center, url, rotation }: GoalGameProps) {
     return () => setPlayBounds(null);
   }, [boxWX, boxWZ, halfX, halfZ, pitch.spinY, setPlayBounds]);
 
-  // The map only renders on demand, so keep it ticking while we play.
   useFrame(() => map.triggerRepaint());
 
-  // Put the ball back on its start spot whenever resetToken changes.
   useEffect(() => {
     const ballBody = ballRef.current;
     if (!ballBody) return;

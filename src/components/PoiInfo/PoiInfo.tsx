@@ -12,15 +12,11 @@ interface PoiDetails {
   title: string;
   description: string;
   history: string;
-  image?: string; // optional photo in /public (broken files hide themselves)
+  image?: string;
   facts: PoiFact[];
 }
 
-// Whether the spot is comfortable to use in the current weather. Uses the same
-// live inputs as the visuals — the Leva "Weather" mode override plus the real
-// forecast — so it changes the moment you switch mode in the Leva GUI.
 function weatherSafety(mode: WeatherMode, weather: Weather | null) {
-  // A forced mode always wins, no need to look at the forecast.
   switch (mode) {
     case "snow":
       return { label: "Icy — take extra care", tone: "caution" };
@@ -33,8 +29,6 @@ function weatherSafety(mode: WeatherMode, weather: Weather | null) {
   }
 }
 
-// "auto" mode reads the real forecast. Worst condition wins: thunder beats
-// snow beats rain beats "safe".
 function autoWeatherSafety(weather: Weather | null) {
   if (!weather) return { label: "Checking the weather…", tone: "neutral" };
 

@@ -18,17 +18,14 @@ import { usePoiStore } from "../../store/poiStore";
 import { dayNight } from "../../lib/dayNight";
 import { POIS, MY_NATURE, NATURE_DENSITY_DEFAULT } from "../../constants";
 
-// The one PoI that carries the ball game (the goals).
 const gamePoi = POIS.find((poi) => poi.game);
 
-// Scene light colours: cool at night, warm in the day.
 const NIGHT_LIGHT = new THREE.Color("#2a3a5c");
 const DAY_LIGHT = new THREE.Color("#fff4e0");
 
 function Experience() {
   useWeatherUpdater();
 
-  // Only run the physics world while its PoI is focused.
   const gameActive = usePoiStore((state) => state.activeName === gamePoi?.name);
 
   const [density] = useControls("Density", () =>
@@ -40,7 +37,6 @@ function Experience() {
     ),
   );
 
-  // Follow the sky cycle: dim + cool the scene lights at night, brighten by day.
   const ambientRef = useRef<THREE.AmbientLight>(null!);
   const sunRef = useRef<THREE.DirectionalLight>(null!);
   useFrame(() => {

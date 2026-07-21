@@ -21,8 +21,6 @@ function Lightning() {
   const secondsUntilNextStrike = useRef(2);
 
   useFrame((_state, deltaSeconds) => {
-    // Forcing "thunder" mode always storms; otherwise it's whatever the real
-    // forecast says.
     const isStorming = mode === "thunder" || !!weather?.isThunder;
     if (!isStorming && flashBrightness.current === 0) return;
 

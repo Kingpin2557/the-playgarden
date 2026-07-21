@@ -1,8 +1,6 @@
 import "./GoalHud.css";
 import { useGameStore } from "../../store/gameStore";
 
-// Bottom-centre control card. Before playing it offers Start; while playing it
-// offers Reset (0 - 0 + ball to origin) and Stop (leave the game).
 function GoalHud() {
   const playing = useGameStore((state) => state.playing);
   const startGame = useGameStore((state) => state.startGame);

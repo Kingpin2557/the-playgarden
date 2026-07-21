@@ -2,7 +2,6 @@ import { create } from "zustand";
 
 import type { LngLatBounds } from "../types";
 
-// The pan box in scene metres: centre (x, z) and its width/length.
 export interface BoxArea {
   x: number;
   z: number;

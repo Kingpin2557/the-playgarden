@@ -7,9 +7,6 @@ interface MouseIconProps {
   className?: string;
 }
 
-// A mouse with one part highlighted, so it's obvious which button to press.
-// Shared by the onboarding tour and the small controls hint — pass a
-// className to resize it for wherever it's used.
 function MouseIcon({ highlight, className }: MouseIconProps) {
   return (
     <svg

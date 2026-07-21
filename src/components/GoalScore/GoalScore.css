@@ -1,4 +1,3 @@
-/* Scoreboard pill — placed in the grid's top-centre cell. */
 .c-goal-score {
     display: flex;
     align-items: center;

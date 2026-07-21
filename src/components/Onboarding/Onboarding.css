@@ -6,7 +6,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 7vh;
-    pointer-events: none; /* let scroll/drag/click reach the map underneath */
+    pointer-events: none; 
 }
 
 .c-onboarding__card {

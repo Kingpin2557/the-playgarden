@@ -9,11 +9,9 @@ import type { PlantConfig } from "../../types";
 
 interface PlantInstancesProps {
   models: PlantConfig[];
-  density: Record<string, number>; // per-model multiplier, keyed by nodeName
+  density: Record<string, number>;
 }
 
-// Density is a multiplier on each layer's base count; this is its ceiling and
-// also sizes the instance buffer so the scatter can grow past the base.
 export const MAX_DENSITY = 2;
 
 function PlantInstances({ models, density }: PlantInstancesProps) {
@@ -21,27 +19,18 @@ function PlantInstances({ models, density }: PlantInstancesProps) {
   const { nodes } = useGLTF("/models/plane.glb");
   const plane = nodes.ground as THREE.Mesh;
 
-  // rotation: spin the ground (plane + plants) around the vertical axis.
-  // up: which model axis points up (1 = on) — the inline X/Y/Z reads like
-  //   Blender's axis toggles; it's aligned to the ground normal so plants stand.
-  // Shares the "Map" Leva folder with longitude/latitude (Leva merges by name).
   const { rotation, up } = useControls("Map", {
     rotation: { value: 0, min: 0, max: 360, step: 1 },
     up: { value: { x: 0, y: 1, z: 0 }, min: 0, max: 1, step: 1 },
   });
-  // Force each axis to a clean 0 or 1, whatever gets typed in the vector.
   const upAxis = {
     x: Math.round(up.x),
     y: Math.round(up.y),
     z: Math.round(up.z),
   };
 
-  // The pannable box lives in its own hook (also in the "Map" Leva folder).
   usePanBox(surface, rotation);
 
-  // Bake the plane's own exported scale into its geometry (like the models use
-  // their node scale). Baking into geometry — not the mesh scale — keeps the
-  // sampler aligned, since MeshSurfaceSampler reads geometry in local space.
   const geometryRef = useRef<THREE.BufferGeometry | undefined>(undefined);
   if (!geometryRef.current) {
     plane.updateWorldMatrix(true, false);

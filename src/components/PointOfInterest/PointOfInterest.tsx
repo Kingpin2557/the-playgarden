@@ -13,13 +13,13 @@ import { useGameStore } from "../../store/gameStore";
 import { usePoiPresentation, boundingBoxCenter } from "../../hooks/usePoiPresentation";
 
 interface PointOfInterestProps {
-  name: string; // shown on the sign and used as the store key
-  url: string; // model to load
-  folder: string; // Leva folder for its position/rotation
+  name: string;
+  url: string;
+  folder: string;
   position: { x: number; y: number };
   rotation: number;
-  view: { zoom: number; pitch: number; bearing: number }; // focus viewpoint
-  game?: boolean; // handled in Experience: spawns the ball game while focused
+  view: { zoom: number; pitch: number; bearing: number };
+  game?: boolean;
 }
 
 function PointOfInterest({
@@ -41,8 +41,6 @@ function PointOfInterest({
   const setGoalPlacement = useGameStore((state) => state.setGoalPlacement);
   const playing = useGameStore((state) => state.playing);
 
-  // position/rotation place the model; zoom/pitch/bearing are the focus shot —
-  // tune bearing to angle the camera past any tree in the way.
   const {
     position: placement,
     rotation: spin,
@@ -57,7 +55,6 @@ function PointOfInterest({
     bearing: { value: view.bearing, min: 0, max: 360, step: 1 },
   });
 
-  // Share the goal PoI's live placement so the physics goals overlap it exactly.
   useEffect(() => {
     if (!game) return;
     setGoalPlacement({ x: placement.x, z: placement.y, rotation: spin });
@@ -86,15 +83,11 @@ function PointOfInterest({
     focusHere();
   };
 
-  // Re-fly while this PoI is focused and its viewpoint sliders change, so you
-  // can tune zoom/pitch/bearing live and see the shot update.
   useEffect(() => {
     if (isActive) focusHere();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom, pitch, bearing]);
 
-  // Clicking the model must not bubble to the Canvas onPointerMissed,
-  // so only the label can return to the global view.
   const onModelClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
   };

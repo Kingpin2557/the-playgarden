@@ -25,7 +25,6 @@ function readCamera(map: Map): CameraView {
   };
 }
 
-// How far you can swivel (degrees, total arc) around a focused PoI's bearing.
 const ROTATE_ARC = 80;
 
 function normalizeAngle(angle: number) {
@@ -67,7 +66,6 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
     if (!map) return;
     if (focus && !homeView.current) homeView.current = readCamera(map);
 
-    // focus already carries longitude/latitude/zoom/pitch/bearing per PoI.
     const view = focus ?? homeView.current;
     if (!view) return;
 
@@ -77,8 +75,6 @@ export function useCameraFocus(mapRef: RefObject<MapRef | null>) {
     };
   }, [focus, mapRef]);
 
-  // Limit the horizontal rotation to a small arc around the PoI's bearing,
-  // but only for user drags while a PoI is focused.
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;

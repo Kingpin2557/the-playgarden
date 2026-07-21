@@ -6,10 +6,6 @@ import { useControls } from "leva";
 import { COORDS } from "../constants";
 import { useMapStore } from "../store/mapStore";
 
-// Owns the pannable box: a boxWidth × boxLength rectangle (metres) centred on the
-// plane. Publishes it to the map as maxBounds, keeps the plane centred in view,
-// and shares the box so the weather can spawn over it. Lives in the "Map" Leva
-// folder (Leva merges by name, so it joins rotation/longitude/latitude).
 export function usePanBox(surface: RefObject<THREE.Mesh>, rotation: number) {
   const map = useMap();
   const setPanBounds = useMapStore((state) => state.setPanBounds);
@@ -37,7 +33,6 @@ export function usePanBox(surface: RefObject<THREE.Mesh>, rotation: number) {
     const halfWidth = boxWidth / 2;
     const halfLength = boxLength / 2;
 
-    // Two opposite corners are enough (the scene is aligned to north).
     const min = vector3ToCoords(
       [center.x - halfWidth, 0, center.z - halfLength],
       COORDS,
@@ -57,11 +52,9 @@ export function usePanBox(surface: RefObject<THREE.Mesh>, rotation: number) {
       ],
     ]);
 
-    // Keep the box centre in the middle of the viewport.
     const coord = vector3ToCoords([center.x, 0, center.z], COORDS);
     map.setCenter([coord.longitude, coord.latitude]);
 
-    // Share the box (scene metres) so the weather can spawn over it.
     setBoxArea({
       x: center.x,
       z: center.z,

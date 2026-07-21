@@ -4,10 +4,6 @@ export type Gesture = "zoom" | "pan" | "rotate";
 
 const DRAG_THRESHOLD = 40;
 
-// Watches the real map inputs (wheel / left-drag / right-drag) and calls
-// onDetected the moment the matching gesture happens. Pass gesture as null
-// (e.g. for a step with nothing to watch on the map) or active as false to
-// stay dormant.
 export function useGestureDetector(
   gesture: Gesture | null,
   active: boolean,
@@ -23,7 +19,6 @@ export function useGestureDetector(
         return () => window.removeEventListener("wheel", onWheel);
       }
 
-      // pan = left drag, rotate = right drag (or ctrl + left drag).
       case "pan":
       case "rotate": {
         let startX = 0;
@@ -54,8 +49,6 @@ export function useGestureDetector(
         };
       }
     }
-    // onDetected is recreated every render; only re-subscribe when the thing
-    // being watched actually changes, not on every parent re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gesture, active]);
 }

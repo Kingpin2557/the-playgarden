@@ -20,10 +20,6 @@ interface UseAimAndShootArgs {
   maxPull: number;
 }
 
-// Click the ball to start the game (if idle), or click-drag-release to aim
-// (direction + power) and shoot. Scores once per shot — the goal trimesh
-// fires many collision events while the ball rests against it, so repeats
-// are ignored until the next kick.
 export function useAimAndShoot({
   map,
   ballRef,
@@ -36,7 +32,7 @@ export function useAimAndShoot({
   maxPull,
 }: UseAimAndShootArgs) {
   const draggingRef = useRef(false);
-  const scoredRef = useRef(false); // one goal per shot, until the next kick
+  const scoredRef = useRef(false);
   const [aim, setAim] = useState<Aim | null>(null);
 
   const ballWorld = () => {
@@ -45,7 +41,6 @@ export function useAimAndShoot({
     return point;
   };
 
-  // Ball hover shows a pointer cursor; clicking an idle ball starts the game.
   const setCursor = (value: string) => {
     const canvas = map.getCanvas();
     if (canvas) canvas.style.cursor = value;
@@ -54,8 +49,8 @@ export function useAimAndShoot({
   const startDrag = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     draggingRef.current = true;
-    scoredRef.current = false; // allow a fresh goal for this kick
-    setAiming(true); // pause map panning while aiming
+    scoredRef.current = false;
+    setAiming(true);
     const from = ballWorld();
     setAim({ from: [from.x, spawnY, from.z], to: [from.x, spawnY, from.z] });
   };
@@ -97,8 +92,6 @@ export function useAimAndShoot({
     ballRef.current.applyImpulse({ x: direction.x, y: 0, z: direction.z }, true);
   };
 
-  // Safety net: releasing the pointer anywhere ends the aim (and re-enables
-  // the map), even if you let go off the pitch.
   useEffect(() => {
     const stop = () => {
       if (!draggingRef.current) return;
@@ -110,14 +103,13 @@ export function useAimAndShoot({
     return () => window.removeEventListener("pointerup", stop);
   }, [setAiming]);
 
-  // Score once per shot: ignore repeat hits until the next kick.
   const registerGoal = (
     payload: { other: { rigidBodyObject?: THREE.Object3D | null } },
     score: () => void,
   ) => {
     if (!playing || scoredRef.current || !ballEntered(payload)) return;
     scoredRef.current = true;
-    score(); // bumps resetToken, which teleports the ball back to its start
+    score();
   };
 
   return { aim, onBallDown, moveDrag, endDrag, registerGoal, setCursor };

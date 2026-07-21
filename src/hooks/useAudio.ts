@@ -22,8 +22,6 @@ const AMBIENT_SOURCES = {
 
 type AmbientKey = keyof typeof AMBIENT_SOURCES;
 
-// A thunderstorm still gets the rain loop — it's stormy weather, not its own
-// ambient track.
 function pickAmbient(mode: WeatherMode, weather: Weather | null): AmbientKey | null {
   if (isSnowing(mode, weather)) return "snow";
   if (isRaining(mode, weather) || isThundering(mode, weather)) return "rain";

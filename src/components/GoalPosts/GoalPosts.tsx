@@ -4,7 +4,7 @@ import type { Split } from "../../lib/goalPhysics";
 
 interface GoalPostsProps {
   goals: Split;
-  goalKey: string; // remounts the colliders when the tuning offset/rotate changes
+  goalKey: string;
   position: [number, number, number];
   rotationY: number;
   showDebug: boolean;
@@ -12,10 +12,6 @@ interface GoalPostsProps {
   onRightCollision: (payload: CollisionEnterPayload) => void;
 }
 
-// The two goal colliders — one solid box per goal. Each reports the ball
-// hitting it (onCollisionEnter), so the box itself is the goal detection —
-// no separate sensor needed. showDebug renders the collider boxes so you can
-// see exactly what the ball is hitting.
 function GoalPosts({
   goals,
   goalKey,

@@ -27,7 +27,6 @@
         color: #fff;
     }
 
-    /* Onboarding highlight: pulse to draw the eye to a sign. */
     &[data-hint] {
         background: var(--accent);
         border-color: var(--accent);

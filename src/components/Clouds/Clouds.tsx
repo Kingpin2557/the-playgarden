@@ -10,7 +10,7 @@ import { useMapStore } from "../../store/mapStore";
 const MAX_CLOUDS = 12;
 const PUFFS_PER_CLOUD = 5;
 const DRIFT_SPEED = 3;
-const SPREAD = 2.4; // cloud field size relative to the pan box
+const SPREAD = 2.4;
 const THRESHOLD = 0.2;
 
 interface Puff {
@@ -21,7 +21,7 @@ interface Puff {
 }
 
 interface Cloud {
-  x: number; // normalized [-0.5, 0.5] across the box, scaled at draw time
+  x: number;
   z: number;
   scale: number;
   puffs: Puff[];
@@ -41,7 +41,6 @@ function makeClouds(): Cloud[] {
   }));
 }
 
-// Keep a normalized coordinate within [-0.5, 0.5] as clouds drift off one edge.
 function wrapUnit(value: number) {
   if (value > 0.5) return value - 1;
   if (value < -0.5) return value + 1;
@@ -50,9 +49,6 @@ function wrapUnit(value: number) {
 
 const puffTransform = new THREE.Object3D();
 
-// A mode counts as "stormy" for the purposes of clouds — rain and thunder
-// both thicken the clouds along with the rain, rather than using the plain
-// cover override.
 function isStormyMode(mode: string) {
   return mode === "rain" || mode === "thunder";
 }
@@ -82,9 +78,6 @@ function Clouds() {
       render: (get) =>
         get("Weather.showClouds") && isStormyMode(get("Weather.mode")),
     },
-    // Shared with WeatherParticles' own "roof height" control — clouds sit at
-    // the same height rain/snow falls from, since that's where it's falling
-    // from.
     height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
   });
 
@@ -96,9 +89,6 @@ function Clouds() {
   if (!cloudsRef.current) cloudsRef.current = makeClouds();
   const clouds = cloudsRef.current;
 
-  // The "amount of clouds" slider always wins once you set it. Otherwise:
-  // rain/thunder thicken the clouds along with the storm (the Leva knob
-  // above); everything else follows the real forecast's cloud cover.
   const coverage = weather?.cloudCover ?? 0;
   const cloudiness =
     coverOverride >= 0
@@ -123,7 +113,6 @@ function Clouds() {
   useFrame((_state, deltaSeconds) => {
     if (activeCloudCount === 0 || !boxArea) return;
 
-    // Hover over the pan box centre, spread across its width/length.
     groupRef.current.position.set(boxArea.x, height, boxArea.z);
 
     materialRef.current.color.setScalar(

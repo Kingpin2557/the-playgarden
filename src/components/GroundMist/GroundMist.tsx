@@ -8,21 +8,19 @@ import { useWeatherStore } from "../../store/weatherStore";
 import { useMapStore } from "../../store/mapStore";
 import { dayNight } from "../../lib/dayNight";
 
-// A cheap low mist: a few dozen wide, flat, translucent blobs drifting just
-// above the ground. Unlit + overlapping, so it reads as a soft ground fog.
 const PUFFS = 44;
 const MIN_Y = 0.3;
 const MAX_Y = 3;
-const DRIFT = 1.5; // metres/sec
+const DRIFT = 1.5;
 
 const DAY_MIST = new THREE.Color("#e2e8ef");
 const NIGHT_MIST = new THREE.Color("#222b3d");
 
 interface Puff {
-  x: number; // normalized [-0.5, 0.5] across the box
+  x: number;
   z: number;
   y: number;
-  radius: number; // wide flat blob
+  radius: number;
 }
 
 function makePuffs(): Puff[] {
@@ -76,9 +74,6 @@ function GroundMist() {
   if (!puffsRef.current) puffsRef.current = makePuffs();
   const puffs = puffsRef.current;
 
-  // fog: -1 = auto from the forecast (fog code, or heavy overcast), else forced.
-  // There's no forced "fog" mode — fog only ever comes from the real forecast
-  // or this override slider.
   const cover = weather?.cloudCover ?? 0;
   const autoAmount = weather?.isFog ? 1 : mode === "auto" && cover >= 0.9 ? 0.5 : 0;
   const amount = fogOverride >= 0 ? fogOverride : autoAmount;
@@ -105,7 +100,6 @@ function GroundMist() {
         puff.y,
         puff.z * boxArea.length,
       );
-      // Wide and flat so it hugs the ground.
       puffTransform.scale.set(puff.radius, puff.radius * 0.25, puff.radius);
       puffTransform.updateMatrix();
       mesh.setMatrixAt(index, puffTransform.matrix);

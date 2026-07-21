@@ -17,8 +17,6 @@
     gap: var(--space-2);
 }
 
-/* A fixed square box per row, so the mouse icon (tall) and the click icon
-   (wide) read as the same size even though their own artwork isn't square. */
 .c-controls-hint__icon-box {
     display: inline-flex;
     flex: none;

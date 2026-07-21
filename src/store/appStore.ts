@@ -4,7 +4,7 @@ interface AppStore {
   entered: boolean;
   audioEnabled: boolean;
   onboarded: boolean;
-  hintPoi: string | null; // name of the PoI the onboarding is highlighting
+  hintPoi: string | null;
   enter: (audioEnabled: boolean) => void;
   finishOnboarding: () => void;
   setHintPoi: (name: string | null) => void;

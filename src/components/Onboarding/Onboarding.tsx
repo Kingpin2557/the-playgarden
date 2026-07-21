@@ -7,7 +7,6 @@ import { useGestureDetector, type Gesture } from "../../hooks/useGestureDetector
 import MouseIcon from "../MouseIcon/MouseIcon";
 import ClickIcon from "../ClickIcon/ClickIcon";
 
-// Which PoI the onboarding pulses during the "explore" step (must be a real name).
 const HIGHLIGHT_POI = "Goals";
 
 const STEPS = [
@@ -52,9 +51,8 @@ function Onboarding() {
 
   const active = entered && !onboarded;
   const current = STEPS[step];
-  const detecting = active && !celebrating; // paused mid-celebration
+  const detecting = active && !celebrating;
 
-  // Flash a "done" state, then move to the next step (or finish the tour).
   function completeStep() {
     if (busyRef.current) return;
     busyRef.current = true;
@@ -73,15 +71,12 @@ function Onboarding() {
     }, CELEBRATE_MS);
   }
 
-  // Watch the real map inputs for the current step and auto-advance.
-  // "explore" has nothing to watch on the map — it's handled below instead.
   useGestureDetector(
     current.detect === "explore" ? null : (current.detect as Gesture),
     detecting,
     completeStep,
   );
 
-  // The "explore" step completes when a point of interest gets focused.
   useEffect(() => {
     if (detecting && current.detect === "explore" && focus !== null) {
       completeStep();
@@ -89,7 +84,6 @@ function Onboarding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detecting, current.detect, focus]);
 
-  // Pulse one PoI while on the "explore" step so it's obvious what to click.
   useEffect(() => {
     setHintPoi(detecting && current.detect === "explore" ? HIGHLIGHT_POI : null);
     return () => setHintPoi(null);

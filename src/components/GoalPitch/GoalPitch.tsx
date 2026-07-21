@@ -14,9 +14,6 @@ interface GoalPitchProps {
   onDragEnd: (event: ThreeEvent<PointerEvent>) => void;
 }
 
-// The playing field: ground + four walls (one rotated rigid body), an
-// optional magenta centre marker for tuning, and an invisible plane that
-// extends the drag hit-area beyond the ball itself while aiming.
 function GoalPitch({
   boxWX,
   boxWZ,

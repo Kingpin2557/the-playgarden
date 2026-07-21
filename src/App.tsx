@@ -25,12 +25,8 @@ import LightningFlash from "./components/LightningFlash/LightningFlash";
 import Hud from "./components/Hud/Hud";
 import Experience from "./components/Experience/Experience";
 
-// Drag with no inertial glide (used while playing, so the centre-clamp has no
-// easing animation to fight — that was causing the pan to briefly freeze).
 const DRAG_NO_INERTIA = { maxSpeed: 0 };
 
-// A tight box (in real metres) around the focused PoI, so panning while focused
-// stays right on the goals — just enough to follow the ball.
 function getFocusBounds(
   focus: { longitude: number; latitude: number } | null,
 ): LngLatBounds | undefined {
@@ -43,9 +39,6 @@ function getFocusBounds(
   ];
 }
 
-// No drag at all while aiming a shot or while any PoI is focused and idle; no
-// inertia once the goals game has actually started (so the play-bounds clamp
-// above never fights the glide); normal drag otherwise.
 function resolveDragPan(aiming: boolean, lockedByFocus: boolean, playing: boolean) {
   switch (true) {
     case aiming || lockedByFocus:
@@ -57,9 +50,6 @@ function resolveDragPan(aiming: boolean, lockedByFocus: boolean, playing: boolea
   }
 }
 
-// The map's pan fence: unrestricted while playing (the play-bounds clamp
-// handles it instead), a tight box around a focused PoI, or the scene's own
-// pan box otherwise.
 function resolveMaxBounds(
   playing: boolean,
   isFocused: boolean,
@@ -76,9 +66,6 @@ function resolveMaxBounds(
   }
 }
 
-// The single top-level view: the map, the 3D scene on top of it, and the HUD.
-// There's no routing in this app, so App.tsx owns the whole experience rather
-// than being a thin wrapper around a router outlet.
 function App() {
   const mapRef = useRef<MapRef>(null);
 
@@ -100,11 +87,9 @@ function App() {
   }, [zoom, pitch, bearing]);
 
   useDayNightCycle(mapRef);
-  useCameraFocus(mapRef); // flies to a PoI when one is focused
+  useCameraFocus(mapRef);
   useAudio();
 
-  // While playing, keep the map centre inside the play-box walls so you can
-  // follow the ball across the pitch without panning off the field.
   const playing = useGameStore((state) => state.playing);
   const playBounds = useGameStore((state) => state.playBounds);
   useEffect(() => {
@@ -125,29 +110,19 @@ function App() {
     };
   }, [playing, playBounds]);
 
-  // While focused on a PoI, zoom/rotate are locked but we allow a little panning
-  // (fenced to a tight box around the PoI) so you can follow the action.
   const focus = usePoiStore((state) => state.focus);
   const isFocused = focus !== null;
   const focusBounds = getFocusBounds(focus);
 
-  // While you're dragging the ball, pause map panning so the two don't fight.
   const aiming = useGameStore((state) => state.aiming);
 
-  // Lock panning while any PoI is focused — the one exception is the goals
-  // mini-game, which unlocks panning once it has actually started. Rotating
-  // stays available the whole time you're focused, so you can still look
-  // around the PoI; it only pauses while you're aiming a shot.
   const lockedByFocus = isFocused && !playing;
 
-  // Panning is fenced to the plane's bounding box (+20%), measured in the scene.
   const panBounds = useMapStore((state) => state.panBounds);
 
   const isProd = import.meta.env.VITE_IS_PROD === "true";
   const hideLeva = isProd;
 
-  // A quick way to see the raw scene while tuning in Leva, with none of the
-  // regular UI (welcome screen, lightning flash, HUD) in the way.
   const { hideUi } = useControls("Debug", {
     hideUi: { value: false, label: "hide UI" },
   });

@@ -5,16 +5,12 @@ import { useGLTF } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
 import type { PlantConfig } from "../../types";
 
-const instanceTransform = new THREE.Object3D(); // reused to build each matrix
+const instanceTransform = new THREE.Object3D();
 
-// One fixed seed so the scatter looks the same on every reload.
 const SCATTER_SEED = 1337;
 
-// Instances placed per frame. Big enough to fill in within a few frames (so
-// there's no visible crawl), small enough to never freeze the page on load.
 const CHUNK_SIZE = 50000;
 
-// Tiny deterministic RNG: the same seed always yields the same sequence.
 function makeRandom(seed: number) {
   let state = seed;
   return () => {
@@ -37,7 +33,7 @@ interface PlantLayerProps {
   surface: RefObject<THREE.Mesh>;
   density: number;
   capacity: number;
-  up: { x: number; y: number; z: number }; // model's up axis, aligned to normal
+  up: { x: number; y: number; z: number };
 }
 
 function PlantLayer({ config, surface, density, capacity, up }: PlantLayerProps) {
@@ -58,7 +54,6 @@ function PlantLayer({ config, surface, density, capacity, up }: PlantLayerProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model]);
 
-  // Scatter deterministically: seed both the surface sampling AND the spin.
   useEffect(() => {
     const surfaceMesh = surface.current;
     const instancedMesh = instancedMeshRef.current;

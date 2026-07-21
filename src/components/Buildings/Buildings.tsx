@@ -1,7 +1,5 @@
 import { Source, Layer } from "react-map-gl/maplibre";
 
-// Plain extruded buildings, coloured by height in the site's palette
-// (mint → green → peach → orange) so they feel playful instead of grey.
 function Buildings() {
   return (
     <Source type="vector" url="https://tiles.openfreemap.org/planet">

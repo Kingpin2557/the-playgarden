@@ -1,14 +1,10 @@
 import "./ClickIcon.css";
 
 interface ClickIconProps {
-  drag?: boolean; // adds a small arrow, for "click and drag something" actions
+  drag?: boolean;
   className?: string;
 }
 
-// A pointer clicking something — used for actions on an object in the scene
-// (a button, the ball) rather than a camera move, which uses MouseIcon
-// instead. The two small ticks are a click "ping"; the arrow (when drag is
-// on) shows you keep holding and moving.
 function ClickIcon({ drag, className }: ClickIconProps) {
   return (
     <svg

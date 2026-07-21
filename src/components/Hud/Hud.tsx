@@ -8,9 +8,6 @@ import { useAppStore } from "../../store/appStore";
 import { usePoiStore } from "../../store/poiStore";
 import { useGameStore } from "../../store/gameStore";
 
-// What you can currently do — mirrors the pan/zoom/rotate rules in App.tsx.
-// Rotate stays available the whole time you're focused on a PoI; pan only
-// unlocks once the goals game has actually started.
 function resolveControlHints(activeName: string | null, playing: boolean): ControlHint[] {
   switch (true) {
     case playing:
@@ -39,8 +36,6 @@ function resolveControlHints(activeName: string | null, playing: boolean): Contr
   }
 }
 
-// The 2D overlay drawn on top of the map/3D scene — weather, PoI info, the
-// onboarding tour, and the goal-game HUD.
 function Hud() {
   const onboarded = useAppStore((state) => state.onboarded);
   const activeName = usePoiStore((state) => state.activeName);

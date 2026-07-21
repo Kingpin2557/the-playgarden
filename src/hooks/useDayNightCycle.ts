@@ -12,9 +12,6 @@ const NIGHT = { sky: "#0b1026", horizon: "#1b2540", fog: "#0e1630" };
 const DUSK = { sky: "#f6a15a", horizon: "#ff8c42", fog: "#ffb27a" };
 const CLOUDY = { sky: "#8a93a3", horizon: "#9aa3b2", fog: "#aeb6c2" };
 
-// Scratch colors reused across calls — NoColorSpace keeps this a plain,
-// gamma-free channel mix (no sRGB/linear conversion), matching a straight
-// 0-255 blend of the two hex colors.
 const mixed = new Color();
 const target = new Color();
 

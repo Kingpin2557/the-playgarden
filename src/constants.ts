@@ -1,33 +1,25 @@
-// One home for the tunable constants used across the app — the values Leva
-// starts its sliders from, the points of interest, and the scatter models.
-// Tune live in the Leva panels, then paste the numbers back here.
-
 export const COORDS = {
   longitude: 3.7144315474037364,
   latitude: 51.063943600278726,
 };
 
-// --- Camera / map -----------------------------------------------------------
-
 export const CAMERA_START = { zoom: 24, pitch: 74, bearing: 142 };
 
 export const GLOBAL_MIN_ZOOM = 15;
-export const GLOBAL_MAX_ZOOM = 20; // global zoom-in stops here
-export const FOCUS_MAX_ZOOM = 22; // the PoI fly-to needs to go closer than global
-export const FOCUS_PAN_METRES = 12; // tight leeway around a focused PoI, in metres
+export const GLOBAL_MAX_ZOOM = 20;
+export const FOCUS_MAX_ZOOM = 22;
+export const FOCUS_PAN_METRES = 12;
 
 export const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
-// --- Points of interest -----------------------------------------------------
-
 export interface PoiConfig {
-  name: string; // shown on the sign + used as the store key
-  url: string; // model file
-  folder: string; // Leva folder (keep as the model/node name)
+  name: string;
+  url: string;
+  folder: string;
   position: { x: number; y: number };
   rotation: number;
   view: { zoom: number; pitch: number; bearing: number };
-  game?: boolean; // spawn the kick-about ball game when this PoI is focused
+  game?: boolean;
 }
 
 export const POIS: PoiConfig[] = [
@@ -66,12 +58,10 @@ export const POIS: PoiConfig[] = [
   },
 ];
 
-// --- Nature scatter ---------------------------------------------------------
-
 export interface NatureModel {
-  url: string; // scatter model file
-  nodeName: string; // groups models under one Density slider
-  count: number; // instances scattered across the ground
+  url: string;
+  nodeName: string;
+  count: number;
 }
 
 export const MY_NATURE: NatureModel[] = [
@@ -84,8 +74,6 @@ export const MY_NATURE: NatureModel[] = [
 ];
 
 export const NATURE_DENSITY_DEFAULT = 1;
-
-// --- Goals mini-game (Ball Game Leva folder) --------------------------------
 
 export const BALL_GAME = {
   ballRadius: 0.4,
