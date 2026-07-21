@@ -35,7 +35,6 @@ function WeatherParticles() {
   const setMode = useWeatherStore((state) => state.setMode);
   const boxArea = useMapStore((state) => state.boxArea);
 
-  // height is the "roof" over the pan box that rain/snow falls from.
   const { mode: rawMode, height } = useControls("Weather", {
     mode: { value: "auto", options: ["auto", "rain", "snow", "thunder"] },
     height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
@@ -81,7 +80,6 @@ function WeatherParticles() {
   useFrame((_state, deltaSeconds) => {
     if (activeCount === 0 || !boxArea) return;
 
-    // Spawn area = the pan box roof; particles fall straight down onto the park.
     const halfX = boxArea.width / 2;
     const halfZ = boxArea.length / 2;
     groupRef.current.position.set(boxArea.x, 0, boxArea.z);
