@@ -1,4 +1,4 @@
-.poi-label {
+.c-point-of-interest__label {
     cursor: pointer;
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-pill);
@@ -21,14 +21,14 @@
         border-color: var(--accent-border);
     }
 
-    &.poi-label--active {
+    &[data-active] {
         background: var(--accent);
         border-color: var(--accent);
         color: #fff;
     }
 
     /* Onboarding highlight: pulse to draw the eye to a sign. */
-    &.poi-label--hint {
+    &[data-hint] {
         background: var(--accent);
         border-color: var(--accent);
         color: #fff;

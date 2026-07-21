@@ -1,13 +1,15 @@
 import { create } from "zustand";
 
+import type { LngLatBounds } from "../types";
+
 // Live world placement of the visible goal model (scene metres + Y rotation in
 // degrees). PointOfInterest publishes it so the physics goals sit exactly on top
 // of what you see, even while you tune the "Goal" Leva folder.
 type GoalPlacement = { x: number; z: number; rotation: number } | null;
 
-// [[west, south], [east, north]] lng/lat rectangle of the play-box walls, used
-// as the map's pan limit while the game is running.
-type PlayBounds = [[number, number], [number, number]] | null;
+// The lng/lat rectangle of the play-box walls, used as the map's pan limit
+// while the game is running.
+type PlayBounds = LngLatBounds | null;
 
 // State for the goals mini-game. `playing` gates the whole game UI: before it's
 // true the visitor just sees the pitch + a Start/Play button; once playing, the

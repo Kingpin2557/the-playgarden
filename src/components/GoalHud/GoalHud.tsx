@@ -10,32 +10,32 @@ function GoalHud() {
   const resetGame = useGameStore((state) => state.resetGame);
 
   return (
-    <div className="goal-hud">
-      <div className="goal-hud__head">
-        <span className="goal-hud__ball">⚽</span>
-        <span className="goal-hud__title">Kick-about</span>
+    <div className="c-goal-hud">
+      <div className="c-goal-hud__head">
+        <span className="c-goal-hud__ball">⚽</span>
+        <span className="c-goal-hud__title">Kick-about</span>
       </div>
 
-      <p className="goal-hud__hint">
+      <p className="c-goal-hud__hint">
         {playing
           ? "Click the ball and drag to aim — the further you drag, the harder the shot. Release to fire it into a goal."
           : "Ready for a kick-about? Press start, or just click the ball, to play."}
       </p>
 
       {playing ? (
-        <div className="goal-hud__buttons">
+        <div className="c-goal-hud__buttons">
           <button
-            className="goal-hud__btn goal-hud__btn--ghost"
+            className="c-goal-hud__btn c-goal-hud__btn--ghost"
             onClick={resetGame}
           >
             Reset game
           </button>
-          <button className="goal-hud__btn" onClick={stopGame}>
+          <button className="c-goal-hud__btn" onClick={stopGame}>
             Stop game
           </button>
         </div>
       ) : (
-        <button className="goal-hud__btn" onClick={startGame}>
+        <button className="c-goal-hud__btn" onClick={startGame}>
           Start game
         </button>
       )}

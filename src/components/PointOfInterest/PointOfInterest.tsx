@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
 import * as THREE from "three";
 import { Html, useGLTF } from "@react-three/drei";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { type ThreeEvent } from "@react-three/fiber";
 import { useMap, vector3ToCoords } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
@@ -10,24 +10,7 @@ import { COORDS } from "../../constants";
 import { usePoiStore } from "../../store/poiStore";
 import { useAppStore } from "../../store/appStore";
 import { useGameStore } from "../../store/gameStore";
-import { getGround } from "../../lib/ground";
-
-const LABEL_MARGIN = 1;
-const RAY_HEIGHT = 1000;
-const HINT_ZOOM = 19; // global zoom used to frame the highlighted PoI
-const HINT_TOP_PAD = 0.35; // top inset (fraction of height) so the PoI sits lower
-
-const raycaster = new THREE.Raycaster();
-const DOWN = new THREE.Vector3(0, -1, 0);
-const rayOrigin = new THREE.Vector3();
-const modelBox = new THREE.Box3();
-
-function boundingBoxCenter(object: THREE.Object3D) {
-  object.updateWorldMatrix(true, true);
-  const center = new THREE.Vector3();
-  new THREE.Box3().setFromObject(object).getCenter(center);
-  return center;
-}
+import { usePoiPresentation, boundingBoxCenter } from "../../hooks/usePoiPresentation";
 
 interface PointOfInterestProps {
   name: string; // shown on the sign and used as the store key
@@ -80,67 +63,7 @@ function PointOfInterest({
     setGoalPlacement({ x: placement.x, z: placement.y, rotation: spin });
   }, [game, placement.x, placement.y, spin, setGoalPlacement]);
 
-  const [labelPosition, setLabelPosition] = useState<[number, number, number]>([
-    0, 2, 0,
-  ]);
-
-  useEffect(() => {
-    const object = ref.current;
-    if (!object) return;
-    object.updateWorldMatrix(true, true);
-    const box = new THREE.Box3().setFromObject(object);
-    if (box.isEmpty()) return;
-    if (object.parent)
-      box.applyMatrix4(object.parent.matrixWorld.clone().invert());
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    setLabelPosition([center.x, box.max.y + LABEL_MARGIN, center.z]);
-  }, []);
-
-  // While this PoI is the onboarding highlight, ease the global camera onto it
-  // so it's fully in view before the visitor clicks it. Inset the top so it
-  // stays horizontally centred but sits lower, clear of the onboarding card.
-  const paddedRef = useRef(false);
-  useEffect(() => {
-    const object = ref.current;
-    if (isHinted && !isActive && object) {
-      const center = boundingBoxCenter(object);
-      const coordinate = vector3ToCoords([center.x, 0, center.z], COORDS);
-      const topPad = map.getContainer().clientHeight * HINT_TOP_PAD;
-      map.easeTo({
-        center: [coordinate.longitude, coordinate.latitude],
-        zoom: HINT_ZOOM,
-        padding: { top: topPad, bottom: 0, left: 0, right: 0 },
-        duration: 800,
-      });
-      paddedRef.current = true;
-    } else if (paddedRef.current) {
-      // Clear the inset once the highlight ends so the rest of the app centres.
-      paddedRef.current = false;
-      map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 });
-      map.triggerRepaint();
-    }
-  }, [isHinted, isActive, map]);
-
-  useFrame(() => {
-    const model = ref.current;
-    const ground = getGround();
-    if (!model?.parent || !ground) return;
-
-    const group = model.parent;
-    group.updateWorldMatrix(true, false);
-    group.getWorldPosition(rayOrigin);
-    rayOrigin.y = RAY_HEIGHT;
-    raycaster.set(rayOrigin, DOWN);
-
-    const hits = raycaster.intersectObject(ground, false);
-    if (hits.length === 0) return;
-
-    model.updateWorldMatrix(true, true);
-    modelBox.setFromObject(model);
-    // lift/lower the group so the model's lowest point rests on the ground
-    group.position.y -= modelBox.min.y - hits[0].point.y;
-  });
+  const labelPosition = usePoiPresentation({ ref, map, isHinted, isActive });
 
   const focusHere = () => {
     const center = boundingBoxCenter(ref.current);
@@ -176,12 +99,6 @@ function PointOfInterest({
     event.stopPropagation();
   };
 
-  const labelClass = isActive
-    ? "poi-label poi-label--active"
-    : isHinted
-      ? "poi-label poi-label--hint"
-      : "poi-label";
-
   return (
     <group position={[placement.x, 0, placement.y]}>
       <primitive
@@ -192,7 +109,12 @@ function PointOfInterest({
       />
       {!(isActive && playing) && (
         <Html position={labelPosition} center>
-          <button onClick={toggle} className={labelClass}>
+          <button
+            onClick={toggle}
+            className="c-point-of-interest__label"
+            data-active={isActive || undefined}
+            data-hint={isHinted || undefined}
+          >
             {isActive ? "← Back" : name}
           </button>
         </Html>

@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import "./Onboarding.css";
 import { useAppStore } from "../../store/appStore";
 import { usePoiStore } from "../../store/poiStore";
+import { useGestureDetector, type Gesture } from "../../hooks/useGestureDetector";
+import MouseIcon from "../MouseIcon/MouseIcon";
+import ClickIcon from "../ClickIcon/ClickIcon";
 
 // Which PoI the onboarding pulses during the "explore" step (must be a real name).
 const HIGHLIGHT_POI = "Goals";
@@ -27,67 +30,14 @@ const STEPS = [
     detect: "rotate",
   },
   {
-    button: "left",
+    button: "click",
     title: "Points of interest",
     hint: "Left-click the glowing sign to fly over and explore it.",
     detect: "explore",
   },
 ] as const;
 
-// A mouse with one part highlighted, so it's obvious which button to press.
-function MouseIcon({ highlight }: { highlight: "scroll" | "left" | "right" }) {
-  return (
-    <svg className="onboarding__mouse" viewBox="0 0 48 64" aria-hidden="true">
-      <rect
-        x="8"
-        y="4"
-        width="32"
-        height="56"
-        rx="16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-      {highlight === "left" && (
-        <path
-          className="onboarding__mouse-fill"
-          d="M8 28 L8 20 A16 16 0 0 1 24 4 L24 28 Z"
-        />
-      )}
-      {highlight === "right" && (
-        <path
-          className="onboarding__mouse-fill"
-          d="M40 28 L40 20 A16 16 0 0 0 24 4 L24 28 Z"
-        />
-      )}
-      {highlight === "scroll" && (
-        <rect
-          className="onboarding__mouse-fill"
-          x="21"
-          y="10"
-          width="6"
-          height="12"
-          rx="3"
-        />
-      )}
-      <line x1="8" y1="28" x2="40" y2="28" stroke="currentColor" strokeWidth="3" />
-      <line x1="24" y1="4" x2="24" y2="28" stroke="currentColor" strokeWidth="3" />
-      <rect
-        x="21"
-        y="10"
-        width="6"
-        height="12"
-        rx="3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      />
-    </svg>
-  );
-}
-
 const CELEBRATE_MS = 800;
-const DRAG_THRESHOLD = 40;
 
 function Onboarding() {
   const entered = useAppStore((state) => state.entered);
@@ -101,6 +51,8 @@ function Onboarding() {
   const busyRef = useRef(false);
 
   const active = entered && !onboarded;
+  const current = STEPS[step];
+  const detecting = active && !celebrating; // paused mid-celebration
 
   // Flash a "done" state, then move to the next step (or finish the tour).
   function completeStep() {
@@ -122,107 +74,65 @@ function Onboarding() {
   }
 
   // Watch the real map inputs for the current step and auto-advance.
-  useEffect(() => {
-    if (!active || celebrating) return;
-    const detect = STEPS[step].detect;
-
-    if (detect === "zoom") {
-      const onWheel = () => completeStep();
-      window.addEventListener("wheel", onWheel, { passive: true });
-      return () => window.removeEventListener("wheel", onWheel);
-    }
-
-    // pan = left drag, rotate = right drag (or ctrl + left drag).
-    if (detect === "pan" || detect === "rotate") {
-      let startX = 0;
-      let startY = 0;
-      let tracking = false;
-      const onDown = (event: PointerEvent) => {
-        const isRotate = event.button === 2 || (event.button === 0 && event.ctrlKey);
-        const isPan = event.button === 0 && !event.ctrlKey;
-        tracking = detect === "rotate" ? isRotate : isPan;
-        startX = event.clientX;
-        startY = event.clientY;
-      };
-      const onMove = (event: PointerEvent) => {
-        const moved = Math.hypot(event.clientX - startX, event.clientY - startY);
-        if (tracking && moved > DRAG_THRESHOLD) completeStep();
-      };
-      const onUp = () => {
-        tracking = false;
-      };
-      window.addEventListener("pointerdown", onDown);
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onUp);
-      return () => {
-        window.removeEventListener("pointerdown", onDown);
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onUp);
-      };
-    }
-    // "explore" is handled by the focus effect below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, step, celebrating]);
+  // "explore" has nothing to watch on the map — it's handled below instead.
+  useGestureDetector(
+    current.detect === "explore" ? null : (current.detect as Gesture),
+    detecting,
+    completeStep,
+  );
 
   // The "explore" step completes when a point of interest gets focused.
   useEffect(() => {
-    if (!active || celebrating) return;
-    if (STEPS[step].detect === "explore" && focus !== null) completeStep();
+    if (detecting && current.detect === "explore" && focus !== null) {
+      completeStep();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, step, celebrating, focus]);
+  }, [detecting, current.detect, focus]);
 
   // Pulse one PoI while on the "explore" step so it's obvious what to click.
   useEffect(() => {
-    const onExplore =
-      active && !celebrating && STEPS[step].detect === "explore";
-    setHintPoi(onExplore ? HIGHLIGHT_POI : null);
+    setHintPoi(detecting && current.detect === "explore" ? HIGHLIGHT_POI : null);
     return () => setHintPoi(null);
-  }, [active, step, celebrating, setHintPoi]);
+  }, [detecting, current.detect, setHintPoi]);
 
   if (!active) return null;
 
-  const current = STEPS[step];
-
   return (
-    <div className="onboarding">
-      <div className="onboarding__card">
-        <div className="onboarding__count">
+    <div className="c-onboarding">
+      <div className="c-onboarding__card">
+        <div className="c-onboarding__count">
           Step {step + 1} of {STEPS.length}
         </div>
 
-        <span
-          className={
-            celebrating
-              ? "onboarding__icon onboarding__icon--done"
-              : "onboarding__icon"
-          }
-        >
-          {celebrating ? "✓" : <MouseIcon highlight={current.button} />}
+        <span className="c-onboarding__icon" data-done={celebrating || undefined}>
+          {celebrating ? (
+            "✓"
+          ) : current.button === "click" ? (
+            <ClickIcon />
+          ) : (
+            <MouseIcon highlight={current.button} />
+          )}
         </span>
 
-        <div className="onboarding__title">
+        <div className="c-onboarding__title">
           {celebrating ? "Nice!" : current.title}
         </div>
-        <p className="onboarding__hint">
+        <p className="c-onboarding__hint">
           {celebrating ? "Great — here comes the next one." : current.hint}
         </p>
 
-        <div className="onboarding__dots">
+        <div className="c-onboarding__dots">
           {STEPS.map((item, index) => (
             <span
               key={item.title}
-              className={
-                index === step
-                  ? "onboarding__dot onboarding__dot--on"
-                  : index < step
-                    ? "onboarding__dot onboarding__dot--past"
-                    : "onboarding__dot"
-              }
+              className="c-onboarding__dot"
+              data-on={index === step || undefined}
+              data-past={index < step || undefined}
             />
           ))}
         </div>
 
-        <button className="onboarding__skip" onClick={finishOnboarding}>
+        <button className="c-onboarding__skip" onClick={finishOnboarding}>
           Skip tour
         </button>
       </div>

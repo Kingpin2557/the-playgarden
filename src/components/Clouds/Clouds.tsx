@@ -9,7 +9,6 @@ import { useMapStore } from "../../store/mapStore";
 
 const MAX_CLOUDS = 12;
 const PUFFS_PER_CLOUD = 5;
-const ALTITUDE = 15; // just above the tree canopy
 const DRIFT_SPEED = 3;
 const SPREAD = 2.4; // cloud field size relative to the pan box
 const THRESHOLD = 0.2;
@@ -51,14 +50,42 @@ function wrapUnit(value: number) {
 
 const puffTransform = new THREE.Object3D();
 
+// A mode counts as "stormy" for the purposes of clouds — rain and thunder
+// both thicken the clouds along with the rain, rather than using the plain
+// cover override.
+function isStormyMode(mode: string) {
+  return mode === "rain" || mode === "thunder";
+}
+
 function Clouds() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
+  const mode = useWeatherStore((state) => state.mode);
   const boxArea = useMapStore((state) => state.boxArea);
 
-  const { showClouds, coverOverride } = useControls("Weather", {
+  const { showClouds, coverOverride, rainCloudScale, height } = useControls("Weather", {
     showClouds: { value: true, label: "clouds" },
-    coverOverride: { value: -1, min: -1, max: 1, step: 0.05, label: "cloud cover" },
+    coverOverride: {
+      value: -1,
+      min: -1,
+      max: 1,
+      step: 0.05,
+      label: "amount of clouds",
+      render: (get) => get("Weather.showClouds"),
+    },
+    rainCloudScale: {
+      value: 1,
+      min: 0,
+      max: 1,
+      step: 0.05,
+      label: "clouds during rain",
+      render: (get) =>
+        get("Weather.showClouds") && isStormyMode(get("Weather.mode")),
+    },
+    // Shared with WeatherParticles' own "roof height" control — clouds sit at
+    // the same height rain/snow falls from, since that's where it's falling
+    // from.
+    height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
   });
 
   const groupRef = useRef<THREE.Group>(null!);
@@ -69,10 +96,18 @@ function Clouds() {
   if (!cloudsRef.current) cloudsRef.current = makeClouds();
   const clouds = cloudsRef.current;
 
-  const coverage =
-    coverOverride >= 0 ? coverOverride : (weather?.cloudCover ?? 0);
+  // The "amount of clouds" slider always wins once you set it. Otherwise:
+  // rain/thunder thicken the clouds along with the storm (the Leva knob
+  // above); everything else follows the real forecast's cloud cover.
+  const coverage = weather?.cloudCover ?? 0;
   const cloudiness =
-    coverage < THRESHOLD ? 0 : (coverage - THRESHOLD) / (1 - THRESHOLD);
+    coverOverride >= 0
+      ? coverOverride
+      : isStormyMode(mode)
+        ? rainCloudScale
+        : coverage < THRESHOLD
+          ? 0
+          : (coverage - THRESHOLD) / (1 - THRESHOLD);
   const activeCloudCount = showClouds ? Math.round(MAX_CLOUDS * cloudiness) : 0;
 
   const windAngle = ((weather?.windDirection ?? 0) * Math.PI) / 180;
@@ -89,10 +124,10 @@ function Clouds() {
     if (activeCloudCount === 0 || !boxArea) return;
 
     // Hover over the pan box centre, spread across its width/length.
-    groupRef.current.position.set(boxArea.x, ALTITUDE, boxArea.z);
+    groupRef.current.position.set(boxArea.x, height, boxArea.z);
 
     materialRef.current.color.setScalar(
-      weather?.isThunder ? 0.4 : 1 - coverage * 0.35,
+      weather?.isThunder ? 0.4 : 1 - cloudiness * 0.35,
     );
 
     const instancedMesh = instancedMeshRef.current;

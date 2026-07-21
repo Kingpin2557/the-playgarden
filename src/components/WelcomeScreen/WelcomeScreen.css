@@ -1,4 +1,4 @@
-.welcome {
+.c-welcome-screen {
     position: fixed;
     inset: 0;
     z-index: var(--z-welcome);
@@ -31,7 +31,7 @@
         var(--bg);
 }
 
-.welcome__content {
+.c-welcome-screen__content {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -47,7 +47,7 @@
     backdrop-filter: blur(var(--blur));
 }
 
-.welcome__title {
+.c-welcome-screen__title {
     margin: 0;
     font-family: var(--heading);
     font-size: var(--font-welcome);
@@ -60,14 +60,14 @@
     color: transparent;
 }
 
-.welcome__subtitle {
+.c-welcome-screen__subtitle {
     margin: 0;
     font-size: var(--font-md);
     font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
-.welcome__bar {
+.c-welcome-screen__bar {
     width: 100%;
     height: var(--space-2);
     border-radius: var(--radius-pill);
@@ -75,20 +75,20 @@
     overflow: hidden;
 }
 
-.welcome__bar-fill {
+.c-welcome-screen__bar-fill {
     height: 100%;
     border-radius: var(--radius-pill);
     background: linear-gradient(90deg, var(--accent), var(--accent-2));
     transition: width 200ms ease;
 }
 
-.welcome__progress {
+.c-welcome-screen__progress {
     font-size: var(--font-sm);
     font-weight: var(--weight-bold);
     color: var(--text);
 }
 
-.welcome__audio {
+.c-welcome-screen__audio {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -98,14 +98,14 @@
     cursor: pointer;
 }
 
-.welcome__checkbox {
+.c-welcome-screen__checkbox {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.welcome__checkbox-box {
+.c-welcome-screen__checkbox-box {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -120,7 +120,7 @@
         border-color 150ms ease;
 }
 
-.welcome__checkbox-tick {
+.c-welcome-screen__checkbox-tick {
     width: 20px;
     height: 20px;
     color: #fff;
@@ -131,26 +131,26 @@
         transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.welcome__checkbox:checked + .welcome__checkbox-box {
+.c-welcome-screen__checkbox:checked + .c-welcome-screen__checkbox-box {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.welcome__checkbox:checked + .welcome__checkbox-box .welcome__checkbox-tick {
+.c-welcome-screen__checkbox:checked + .c-welcome-screen__checkbox-box .c-welcome-screen__checkbox-tick {
     opacity: 1;
     transform: scale(1);
 }
 
-.welcome__audio:hover .welcome__checkbox-box {
+.c-welcome-screen__audio:hover .c-welcome-screen__checkbox-box {
     transform: scale(1.08);
 }
 
-.welcome__checkbox:focus-visible + .welcome__checkbox-box {
+.c-welcome-screen__checkbox:focus-visible + .c-welcome-screen__checkbox-box {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
-.welcome__enter {
+.c-welcome-screen__enter {
     padding: var(--space-3) var(--space-4);
     border: none;
     border-radius: var(--radius-pill);
@@ -165,12 +165,12 @@
         opacity 150ms ease;
 }
 
-.welcome__enter:hover:not(:disabled) {
+.c-welcome-screen__enter:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.03);
     background: var(--accent-strong);
 }
 
-.welcome__enter:disabled {
+.c-welcome-screen__enter:disabled {
     opacity: 0.5;
     cursor: default;
 }

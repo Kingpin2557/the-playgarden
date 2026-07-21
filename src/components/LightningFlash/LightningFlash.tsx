@@ -12,12 +12,12 @@ function LightningFlash() {
     const element = flashRef.current;
     if (!element) return;
 
-    element.classList.remove("lightning-flash--active");
+    element.removeAttribute("data-active");
     void element.offsetWidth;
-    element.classList.add("lightning-flash--active");
+    element.setAttribute("data-active", "");
   }, [strikeCount]);
 
-  return <div ref={flashRef} className="lightning-flash" />;
+  return <div ref={flashRef} className="c-lightning-flash" />;
 }
 
 export default LightningFlash;

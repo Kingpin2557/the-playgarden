@@ -12,16 +12,28 @@ export interface Weather {
 }
 
 function describeWeather(weatherCode: number): { icon: string; label: string } {
-  if (weatherCode === 0) return { icon: "☀️", label: "Clear" };
-  if (weatherCode <= 2) return { icon: "🌤️", label: "Partly cloudy" };
-  if (weatherCode === 3) return { icon: "☁️", label: "Overcast" };
-  if (weatherCode <= 48) return { icon: "🌫️", label: "Fog" };
-  if (weatherCode <= 57) return { icon: "🌦️", label: "Drizzle" };
-  if (weatherCode <= 67) return { icon: "🌧️", label: "Rain" };
-  if (weatherCode <= 77) return { icon: "🌨️", label: "Snow" };
-  if (weatherCode <= 82) return { icon: "🌧️", label: "Showers" };
-  if (weatherCode <= 86) return { icon: "🌨️", label: "Snow showers" };
-  return { icon: "⛈️", label: "Thunderstorm" };
+  switch (true) {
+    case weatherCode === 0:
+      return { icon: "☀️", label: "Clear" };
+    case weatherCode <= 2:
+      return { icon: "🌤️", label: "Partly cloudy" };
+    case weatherCode === 3:
+      return { icon: "☁️", label: "Overcast" };
+    case weatherCode <= 48:
+      return { icon: "🌫️", label: "Fog" };
+    case weatherCode <= 57:
+      return { icon: "🌦️", label: "Drizzle" };
+    case weatherCode <= 67:
+      return { icon: "🌧️", label: "Rain" };
+    case weatherCode <= 77:
+      return { icon: "🌨️", label: "Snow" };
+    case weatherCode <= 82:
+      return { icon: "🌧️", label: "Showers" };
+    case weatherCode <= 86:
+      return { icon: "🌨️", label: "Snow showers" };
+    default:
+      return { icon: "⛈️", label: "Thunderstorm" };
+  }
 }
 
 export async function fetchWeather(

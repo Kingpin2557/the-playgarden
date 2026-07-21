@@ -1,0 +1,34 @@
+/* Scoreboard pill — placed in the grid's top-centre cell. */
+.c-goal-score {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: var(--border-width) solid var(--panel-border);
+    border-radius: var(--radius-pill);
+    background: var(--panel-bg);
+    color: var(--text-h);
+    backdrop-filter: blur(var(--blur));
+    box-shadow: var(--shadow);
+}
+
+.c-goal-score__value {
+    font-family: var(--heading);
+    font-size: var(--font-xl);
+    font-weight: var(--weight-bold);
+    color: var(--accent);
+    min-width: 1.2ch;
+    text-align: center;
+}
+
+.c-goal-score__dash {
+    font-size: var(--font-lg);
+    color: var(--text);
+}
+
+.c-goal-score__side {
+    font-size: var(--font-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}

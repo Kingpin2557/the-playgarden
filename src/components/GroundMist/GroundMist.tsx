@@ -48,14 +48,23 @@ function GroundMist() {
   const mode = useWeatherStore((state) => state.mode);
   const boxArea = useMapStore((state) => state.boxArea);
 
-  const { fogOverride, fogIntensity } = useControls("Weather", {
-    fogOverride: { value: -1, min: -1, max: 1, step: 0.05, label: "fog" },
+  const { showFog, fogOverride, fogIntensity } = useControls("Weather", {
+    showFog: { value: true, label: "fog" },
+    fogOverride: {
+      value: -1,
+      min: -1,
+      max: 1,
+      step: 0.05,
+      label: "amount of fog",
+      render: (get) => get("Weather.showFog"),
+    },
     fogIntensity: {
       value: 0.22,
       min: 0,
       max: 0.6,
       step: 0.01,
       label: "fog intensity",
+      render: (get) => get("Weather.showFog"),
     },
   });
 
@@ -68,15 +77,12 @@ function GroundMist() {
   const puffs = puffsRef.current;
 
   // fog: -1 = auto from the forecast (fog code, or heavy overcast), else forced.
+  // There's no forced "fog" mode — fog only ever comes from the real forecast
+  // or this override slider.
   const cover = weather?.cloudCover ?? 0;
-  const autoAmount =
-    mode === "fog" || weather?.isFog
-      ? 1
-      : mode === "auto" && cover >= 0.9
-        ? 0.5
-        : 0;
+  const autoAmount = weather?.isFog ? 1 : mode === "auto" && cover >= 0.9 ? 0.5 : 0;
   const amount = fogOverride >= 0 ? fogOverride : autoAmount;
-  const active = amount > 0.01;
+  const active = showFog && amount > 0.01;
 
   useEffect(() => {
     meshRef.current.count = active ? PUFFS : 0;

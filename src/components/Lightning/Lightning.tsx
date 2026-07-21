@@ -2,7 +2,6 @@ import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useMap } from "react-three-map/maplibre";
-import { useControls } from "leva";
 
 import { useWeatherStore } from "../../store/weatherStore";
 import { playThunderClap } from "../../lib/thunderAudio";
@@ -15,16 +14,16 @@ const FADE_SPEED = 12;
 function Lightning() {
   const map = useMap();
   const weather = useWeatherStore((state) => state.weather);
-  const { forceLightning } = useControls("Weather", {
-    forceLightning: { value: false, label: "force lightning" },
-  });
+  const mode = useWeatherStore((state) => state.mode);
 
   const lightRef = useRef<THREE.DirectionalLight>(null!);
   const flashBrightness = useRef(0);
   const secondsUntilNextStrike = useRef(2);
 
   useFrame((_state, deltaSeconds) => {
-    const isStorming = forceLightning || !!weather?.isThunder;
+    // Forcing "thunder" mode always storms; otherwise it's whatever the real
+    // forecast says.
+    const isStorming = mode === "thunder" || !!weather?.isThunder;
     if (!isStorming && flashBrightness.current === 0) return;
 
     if (isStorming) {

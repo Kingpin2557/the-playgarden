@@ -1,0 +1,9 @@
+.c-click-icon {
+    width: 42px;
+    height: auto;
+}
+
+.c-click-icon__ping,
+.c-click-icon__drag {
+    stroke: var(--accent);
+}

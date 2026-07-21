@@ -4,7 +4,12 @@ import { useFrame } from "@react-three/fiber";
 import { useMap } from "react-three-map/maplibre";
 import { useControls } from "leva";
 
-import { useWeatherStore, type WeatherMode } from "../../store/weatherStore";
+import {
+  useWeatherStore,
+  isSnowing,
+  precipitationIntensity,
+  type WeatherMode,
+} from "../../store/weatherStore";
 import { useMapStore } from "../../store/mapStore";
 
 const MAX_PARTICLES = 3000;
@@ -31,12 +36,13 @@ function WeatherParticles() {
   const boxArea = useMapStore((state) => state.boxArea);
 
   // height is the "roof" over the pan box that rain/snow falls from.
-  const { mode, height } = useControls("Weather", {
-    mode: { value: "auto", options: ["auto", "rain", "snow", "fog"] },
+  const { mode: rawMode, height } = useControls("Weather", {
+    mode: { value: "auto", options: ["auto", "rain", "snow", "thunder"] },
     height: { value: 60, min: 10, max: 300, step: 5, label: "roof height" },
   });
+  const mode = rawMode as WeatherMode;
   useEffect(() => {
-    setMode(mode as WeatherMode);
+    setMode(mode);
   }, [mode, setMode]);
 
   const groupRef = useRef<THREE.Group>(null!);
@@ -57,14 +63,9 @@ function WeatherParticles() {
   }
   const { positions, fallSpeeds } = particleData.current;
 
-  const isSnow = mode === "snow" || (mode === "auto" && !!weather?.isSnow);
+  const isSnow = isSnowing(mode, weather);
   const appearance = isSnow ? SNOW : RAIN;
-  const intensity =
-    mode === "auto"
-      ? Math.min((weather?.precipitation ?? 0) / 5, 1)
-      : mode === "fog"
-        ? 0
-        : 1;
+  const intensity = precipitationIntensity(mode, weather);
   const activeCount = Math.floor(MAX_PARTICLES * intensity);
 
   const windAngle = ((weather?.windDirection ?? 0) * Math.PI) / 180;

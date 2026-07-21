@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { MeshSurfaceSampler } from "three/examples/jsm/math/MeshSurfaceSampler.js";
 import { useGLTF } from "@react-three/drei";
 import { useMap } from "react-three-map/maplibre";
-import type { PlantConfig } from "../PlantInstances/PlantInstances";
+import type { PlantConfig } from "../../types";
 
 const instanceTransform = new THREE.Object3D(); // reused to build each matrix
 
@@ -32,19 +32,15 @@ function firstMesh(root: THREE.Object3D): THREE.Mesh | null {
   return found;
 }
 
-function PlantLayer({
-  config,
-  surface,
-  density,
-  capacity,
-  up,
-}: {
+interface PlantLayerProps {
   config: PlantConfig;
   surface: RefObject<THREE.Mesh>;
   density: number;
   capacity: number;
   up: { x: number; y: number; z: number }; // model's up axis, aligned to normal
-}) {
+}
+
+function PlantLayer({ config, surface, density, capacity, up }: PlantLayerProps) {
   const map = useMap();
   const { scene } = useGLTF(config.url);
   const model = firstMesh(scene);

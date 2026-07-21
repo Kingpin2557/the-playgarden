@@ -15,29 +15,29 @@ function WelcomeScreen() {
   const ready = progress >= 100;
 
   return (
-    <div className="welcome">
-      <div className="welcome__content">
-        <h1 className="welcome__title">The Playgarden</h1>
-        <p className="welcome__subtitle">Ontdek de speeltuin.</p>
+    <div className="c-welcome-screen">
+      <div className="c-welcome-screen__content">
+        <h1 className="c-welcome-screen__title">The Playgarden</h1>
+        <p className="c-welcome-screen__subtitle">Ontdek de speeltuin.</p>
 
-        <div className="welcome__bar">
+        <div className="c-welcome-screen__bar">
           <div
-            className="welcome__bar-fill"
+            className="c-welcome-screen__bar-fill"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="welcome__progress">{Math.round(progress)}%</div>
+        <div className="c-welcome-screen__progress">{Math.round(progress)}%</div>
 
-        <label className="welcome__audio">
+        <label className="c-welcome-screen__audio">
           <input
             type="checkbox"
-            className="welcome__checkbox"
+            className="c-welcome-screen__checkbox"
             checked={audioAllowed}
             onChange={(event) => setAudioAllowed(event.target.checked)}
           />
-          <span className="welcome__checkbox-box">
+          <span className="c-welcome-screen__checkbox-box">
             <svg
-              className="welcome__checkbox-tick"
+              className="c-welcome-screen__checkbox-tick"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
@@ -51,11 +51,11 @@ function WelcomeScreen() {
               />
             </svg>
           </span>
-          <span className="welcome__audio-text">Speel achtergrondgeluid af</span>
+          <span className="c-welcome-screen__audio-text">Speel achtergrondgeluid af</span>
         </label>
 
         <button
-          className="welcome__enter"
+          className="c-welcome-screen__enter"
           disabled={!ready}
           onClick={() => enter(audioAllowed)}
         >

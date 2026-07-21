@@ -3,17 +3,11 @@ import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
 import PlantLayer from "../PlantLayer/PlantLayer";
-import { setGround } from "../../lib/ground";
+import { setGround } from "../../lib/dayNight";
 import { usePanBox } from "../../hooks/usePanBox";
+import type { PlantConfig } from "../../types";
 
-export interface PlantConfig {
-  url: string;
-  nodeName: string;
-  count: number;
-  weight?: string; // weight-map to scatter on; defaults to nodeName
-}
-
-interface InstancesProps {
+interface PlantInstancesProps {
   models: PlantConfig[];
   density: Record<string, number>; // per-model multiplier, keyed by nodeName
 }
@@ -22,7 +16,7 @@ interface InstancesProps {
 // also sizes the instance buffer so the scatter can grow past the base.
 export const MAX_DENSITY = 2;
 
-function PlantInstances({ models, density }: InstancesProps) {
+function PlantInstances({ models, density }: PlantInstancesProps) {
   const surface = useRef<THREE.Mesh>(null!);
   const { nodes } = useGLTF("/models/plane.glb");
   const plane = nodes.ground as THREE.Mesh;

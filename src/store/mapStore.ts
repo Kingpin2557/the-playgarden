@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
-// [[west, south], [east, north]] — a lng/lat rectangle for the map's maxBounds.
-export type LngLatBounds = [[number, number], [number, number]];
+import type { LngLatBounds } from "../types";
 
 // The pan box in scene metres: centre (x, z) and its width/length.
 export interface BoxArea {

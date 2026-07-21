@@ -1,0 +1,8 @@
+.c-mouse-icon {
+    width: 42px;
+    height: auto;
+}
+
+.c-mouse-icon__fill {
+    fill: var(--accent);
+}

@@ -5,18 +5,18 @@ import { useControls } from "leva";
 
 import PlantInstances, {
   MAX_DENSITY,
-} from "../components/PlantInstances/PlantInstances";
-import PointOfInterest from "../components/PointOfInterest/PointOfInterest";
-import WeatherParticles from "../components/weatherparticles/WeatherParticles";
-import Clouds from "../components/Clouds/Clouds";
-import GroundMist from "../components/GroundMist/GroundMist";
-import Lightning from "../components/Lightning/Lightning";
-import GoalGame from "../components/GoalGame/GoalGame";
+} from "../PlantInstances/PlantInstances";
+import PointOfInterest from "../PointOfInterest/PointOfInterest";
+import WeatherParticles from "../WeatherParticles/WeatherParticles";
+import Clouds from "../Clouds/Clouds";
+import GroundMist from "../GroundMist/GroundMist";
+import Lightning from "../Lightning/Lightning";
+import GoalGame from "../GoalGame/GoalGame";
 
-import { useWeatherUpdater } from "../hooks/useWeatherUpdater";
-import { usePoiStore } from "../store/poiStore";
-import { dayNight } from "../lib/dayNight";
-import { POIS, MY_NATURE, NATURE_DENSITY_DEFAULT } from "../constants";
+import { useWeatherUpdater } from "../../hooks/useWeatherUpdater";
+import { usePoiStore } from "../../store/poiStore";
+import { dayNight } from "../../lib/dayNight";
+import { POIS, MY_NATURE, NATURE_DENSITY_DEFAULT } from "../../constants";
 
 // The one PoI that carries the ball game (the goals).
 const gamePoi = POIS.find((poi) => poi.game);

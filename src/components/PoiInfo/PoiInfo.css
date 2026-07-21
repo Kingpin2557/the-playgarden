@@ -1,4 +1,4 @@
-.poi-info {
+.c-poi-info {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -15,7 +15,7 @@
     box-shadow: var(--shadow);
 }
 
-.poi-info__image {
+.c-poi-info__image {
     width: 100%;
     height: 140px;
     object-fit: cover;
@@ -23,14 +23,14 @@
     display: block;
 }
 
-.poi-info__title {
+.c-poi-info__title {
     font-family: var(--heading);
     font-size: var(--font-md);
     font-weight: var(--weight-bold);
     color: var(--text-h);
 }
 
-.poi-info__safety {
+.c-poi-info__safety {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -40,34 +40,34 @@
     font-weight: var(--weight-bold);
 }
 
-.poi-info__safety-dot {
+.c-poi-info__safety-dot {
     width: var(--space-2);
     height: var(--space-2);
     border-radius: var(--radius-pill);
     background: currentColor;
 }
 
-.poi-info__safety--safe {
+.c-poi-info__safety--safe {
     background: var(--accent-bg);
     color: var(--accent);
 }
 
-.poi-info__safety--caution {
+.c-poi-info__safety--caution {
     background: var(--warn-bg);
     color: var(--warn);
 }
 
-.poi-info__safety--unsafe {
+.c-poi-info__safety--unsafe {
     background: var(--danger-bg);
     color: var(--danger);
 }
 
-.poi-info__safety--neutral {
+.c-poi-info__safety--neutral {
     background: var(--social-bg);
     color: var(--text);
 }
 
-.poi-info__section-label {
+.c-poi-info__section-label {
     font-size: var(--font-sm);
     font-weight: var(--weight-bold);
     letter-spacing: 0.4px;
@@ -75,17 +75,17 @@
     color: var(--accent);
 }
 
-.poi-info__history {
+.c-poi-info__history {
     color: var(--text);
     font-weight: var(--weight-medium);
 }
 
-.poi-info__description {
+.c-poi-info__description {
     color: var(--text);
     font-weight: var(--weight-medium);
 }
 
-.poi-info__facts {
+.c-poi-info__facts {
     display: grid;
     grid-template-columns: repeat(2, auto);
     gap: var(--space-2);
@@ -93,7 +93,7 @@
     border-top: var(--border-width) solid var(--border);
 }
 
-.poi-info__fact {
+.c-poi-info__fact {
     display: flex;
     align-items: start;
     flex-direction: column;
@@ -104,32 +104,11 @@
     background: var(--accent-bg);
 }
 
-.poi-info__fact-label {
+.c-poi-info__fact-label {
     color: var(--text);
 }
 
-.poi-info__fact-value {
+.c-poi-info__fact-value {
     color: var(--text-h);
     font-weight: var(--weight-bold);
-}
-
-/* Play-game call to action on the goals info card. */
-.poi-info__play {
-    margin-top: var(--space-3);
-    width: 100%;
-    padding: var(--space-3) var(--space-4);
-    border: none;
-    border-radius: var(--radius-pill);
-    background: var(--accent);
-    color: #fff;
-    font: var(--weight-bold) var(--font-md) var(--sans);
-    cursor: pointer;
-    transition:
-        transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
-        background 150ms ease;
-}
-
-.poi-info__play:hover {
-    transform: translateY(-1px) scale(1.02);
-    background: var(--accent-strong);
 }

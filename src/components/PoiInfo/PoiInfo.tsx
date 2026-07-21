@@ -1,6 +1,5 @@
 import "./PoiInfo.css";
 import { usePoiStore } from "../../store/poiStore";
-import { useGameStore } from "../../store/gameStore";
 import { useWeatherStore, type WeatherMode } from "../../store/weatherStore";
 import type { Weather } from "../../lib/weatherApi";
 
@@ -21,19 +20,34 @@ interface PoiDetails {
 // live inputs as the visuals — the Leva "Weather" mode override plus the real
 // forecast — so it changes the moment you switch mode in the Leva GUI.
 function weatherSafety(mode: WeatherMode, weather: Weather | null) {
-  if (mode === "auto" && !weather)
-    return { label: "Checking the weather…", tone: "neutral" };
+  // A forced mode always wins, no need to look at the forecast.
+  switch (mode) {
+    case "snow":
+      return { label: "Icy — take extra care", tone: "caution" };
+    case "rain":
+      return { label: "Wet & slippery — take care", tone: "caution" };
+    case "thunder":
+      return { label: "Closed — thunderstorm nearby", tone: "unsafe" };
+    case "auto":
+      return autoWeatherSafety(weather);
+  }
+}
 
-  const isSnow = mode === "snow" || (mode === "auto" && !!weather?.isSnow);
-  const isThunder = mode === "auto" && !!weather?.isThunder;
-  const isRain =
-    mode === "rain" || (mode === "auto" && (weather?.precipitation ?? 0) > 0);
+// "auto" mode reads the real forecast. Worst condition wins: thunder beats
+// snow beats rain beats "safe".
+function autoWeatherSafety(weather: Weather | null) {
+  if (!weather) return { label: "Checking the weather…", tone: "neutral" };
 
-  if (isThunder)
-    return { label: "Closed — thunderstorm nearby", tone: "unsafe" };
-  if (isSnow) return { label: "Icy — take extra care", tone: "caution" };
-  if (isRain) return { label: "Wet & slippery — take care", tone: "caution" };
-  return { label: "Safe to use right now", tone: "safe" };
+  switch (true) {
+    case weather.isThunder:
+      return { label: "Closed — thunderstorm nearby", tone: "unsafe" };
+    case weather.isSnow:
+      return { label: "Icy — take extra care", tone: "caution" };
+    case weather.precipitation > 0:
+      return { label: "Wet & slippery — take care", tone: "caution" };
+    default:
+      return { label: "Safe to use right now", tone: "safe" };
+  }
 }
 
 const POI_INFO: Record<string, PoiDetails> = {
@@ -99,8 +113,6 @@ function PoiInfo() {
   const activePoi = usePoiStore((state) => state.activeName);
   const weather = useWeatherStore((state) => state.weather);
   const mode = useWeatherStore((state) => state.mode);
-  const playing = useGameStore((state) => state.playing);
-  const startGame = useGameStore((state) => state.startGame);
   if (!activePoi) return null;
 
   const details = POI_INFO[activePoi];
@@ -109,10 +121,10 @@ function PoiInfo() {
   const safety = weatherSafety(mode, weather);
 
   return (
-    <div className="poi-info fit">
+    <div className="c-poi-info u-fit">
       {details.image && (
         <img
-          className="poi-info__image"
+          className="c-poi-info__image"
           src={details.image}
           alt={details.title}
           onError={(event) => {
@@ -121,32 +133,26 @@ function PoiInfo() {
         />
       )}
 
-      <div className="poi-info__title">{details.title}</div>
+      <div className="c-poi-info__title">{details.title}</div>
 
-      <div className={`poi-info__safety poi-info__safety--${safety.tone}`}>
-        <span className="poi-info__safety-dot" />
+      <div className={`c-poi-info__safety c-poi-info__safety--${safety.tone}`}>
+        <span className="c-poi-info__safety-dot" />
         {safety.label}
       </div>
 
-      <p className="poi-info__description">{details.description}</p>
+      <p className="c-poi-info__description">{details.description}</p>
 
-      <div className="poi-info__section-label">History</div>
-      <p className="poi-info__history">{details.history}</p>
+      <div className="c-poi-info__section-label">History</div>
+      <p className="c-poi-info__history">{details.history}</p>
 
-      <div className="poi-info__facts">
+      <div className="c-poi-info__facts">
         {details.facts.map((fact) => (
-          <div className="poi-info__fact" key={fact.label}>
-            <span className="poi-info__fact-label">{fact.label}</span>
-            <span className="poi-info__fact-value">{fact.value}</span>
+          <div className="c-poi-info__fact" key={fact.label}>
+            <span className="c-poi-info__fact-label">{fact.label}</span>
+            <span className="c-poi-info__fact-value">{fact.value}</span>
           </div>
         ))}
       </div>
-
-      {activePoi === "Goals" && !playing && (
-        <button className="poi-info__play" onClick={startGame}>
-          ▶ Play game
-        </button>
-      )}
     </div>
   );
 }

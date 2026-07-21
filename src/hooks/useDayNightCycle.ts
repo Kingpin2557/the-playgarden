@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import type { MapRef } from "react-map-gl/maplibre";
 import { useControls } from "leva";
+import { Color, NoColorSpace } from "three";
 
 import { useWeatherStore } from "../store/weatherStore";
 import { dayNight } from "../lib/dayNight";
@@ -11,16 +12,17 @@ const NIGHT = { sky: "#0b1026", horizon: "#1b2540", fog: "#0e1630" };
 const DUSK = { sky: "#f6a15a", horizon: "#ff8c42", fog: "#ffb27a" };
 const CLOUDY = { sky: "#8a93a3", horizon: "#9aa3b2", fog: "#aeb6c2" };
 
-const lerp = (start: number, end: number, amount: number) =>
-  start + (end - start) * amount;
+// Scratch colors reused across calls — NoColorSpace keeps this a plain,
+// gamma-free channel mix (no sRGB/linear conversion), matching a straight
+// 0-255 blend of the two hex colors.
+const mixed = new Color();
+const target = new Color();
 
 function lerpHex(startHex: string, endHex: string, amount: number) {
-  const start = parseInt(startHex.slice(1), 16);
-  const end = parseInt(endHex.slice(1), 16);
-  const red = Math.round(lerp((start >> 16) & 255, (end >> 16) & 255, amount));
-  const green = Math.round(lerp((start >> 8) & 255, (end >> 8) & 255, amount));
-  const blue = Math.round(lerp(start & 255, end & 255, amount));
-  return `#${((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1)}`;
+  mixed.setStyle(startHex, NoColorSpace);
+  target.setStyle(endHex, NoColorSpace);
+  mixed.lerp(target, amount);
+  return `#${mixed.getHexString(NoColorSpace)}`;
 }
 
 function blend(

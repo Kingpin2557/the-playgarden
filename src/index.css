@@ -94,10 +94,6 @@
             0 14px 34px -8px rgba(0, 0, 0, 0.55),
             0 4px 10px -4px rgba(0, 0, 0, 0.4);
     }
-
-    #social .button-icon {
-        filter: invert(1) brightness(2);
-    }
 }
 
 body {
@@ -133,15 +129,11 @@ p {
     margin: 0;
 }
 
-code,
-.counter {
+code {
     font-family: var(--mono);
     display: inline-flex;
     border-radius: 4px;
     color: var(--text-h);
-}
-
-code {
     font-size: 15px;
     line-height: 135%;
     padding: 4px 8px;
@@ -162,16 +154,18 @@ div .leva-c-hBtFDW .leva-c-hBtFDW-hTGpNn-cv .leva-c-hBtFDW-gOvGdg-cv {
     cursor: default;
 }
 
-.u-grid {
+/* The overlay grid: the one reusable layout primitive that positions every
+   HUD panel around the screen edges, on top of the map/3D scene. */
+.o-overlay-grid {
     position: fixed;
     inset: 0;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
-        "weather score info"
-        ".       .     .   "
-        ".       hud   .   ";
+        "weather score    info"
+        ".       .        .   "
+        ".       hud  controls";
     gap: var(--space-2);
     padding: var(--ui-inset);
 
@@ -183,36 +177,37 @@ div .leva-c-hBtFDW .leva-c-hBtFDW-hTGpNn-cv .leva-c-hBtFDW-gOvGdg-cv {
     }
 }
 
-.u-grid > .weather-widget {
+.o-overlay-grid > .c-weather-widget {
     grid-area: weather;
     justify-self: start;
     align-self: start;
 }
 
-.u-grid > .goal-score {
+.o-overlay-grid > .c-goal-score {
     grid-area: score;
     justify-self: center;
     align-self: start;
 }
 
-.u-grid > .poi-info {
+.o-overlay-grid > .c-poi-info {
     grid-area: info;
     justify-self: end;
     align-self: start;
 }
 
-.u-grid > .goal-hud {
+.o-overlay-grid > .c-goal-hud {
     grid-area: hud;
     justify-self: center;
     align-self: end;
 }
 
-.fit {
-    width: fit-content;
-    height: fit-content;
+.o-overlay-grid > .c-controls-hint {
+    grid-area: controls;
+    justify-self: end;
+    align-self: end;
 }
 
-.maplibregl-canvas-container.maplibregl-interactive,
-.maplibregl-canvas-container.maplibregl-interactive:active {
-    cursor: default;
+.u-fit {
+    width: fit-content;
+    height: fit-content;
 }

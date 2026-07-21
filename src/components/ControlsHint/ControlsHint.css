@@ -1,0 +1,41 @@
+.c-controls-hint {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: var(--border-width) solid var(--panel-border);
+    border-radius: var(--radius);
+    background: var(--panel-bg);
+    color: var(--text);
+    backdrop-filter: blur(var(--blur));
+    box-shadow: var(--shadow);
+}
+
+.c-controls-hint__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* A fixed square box per row, so the mouse icon (tall) and the click icon
+   (wide) read as the same size even though their own artwork isn't square. */
+.c-controls-hint__icon-box {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--text);
+}
+
+.c-controls-hint__icon-box .c-mouse-icon,
+.c-controls-hint__icon-box .c-click-icon {
+    width: 100%;
+    height: 100%;
+}
+
+.c-controls-hint__label {
+    font: var(--weight-semibold) var(--font-sm) / var(--leading) var(--sans);
+    white-space: nowrap;
+}

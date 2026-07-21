@@ -1,151 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useMap, vector3ToCoords } from "react-three-map/maplibre";
-import { Line, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { useControls } from "leva";
-import {
-  Physics,
-  RigidBody,
-  CuboidCollider,
-  TrimeshCollider,
-  type RapierRigidBody,
-} from "@react-three/rapier";
+import { Physics, type RapierRigidBody } from "@react-three/rapier";
+import type { Mesh } from "three";
 
 import { useGameStore } from "../../store/gameStore";
 import { BALL_GAME, COORDS } from "../../constants";
-
-// A simple black-and-white ball texture, drawn once on a canvas: white base with
-// a handful of dark pentagons scattered on it.
-function makeSoccerTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#f4f4f4";
-  ctx.fillRect(0, 0, 256, 256);
-  ctx.fillStyle = "#1c1c1c";
-  for (let index = 0; index < 14; index++) {
-    const centreX = Math.random() * 256;
-    const centreY = Math.random() * 256;
-    const radius = 12 + Math.random() * 12;
-    const spin = Math.random() * Math.PI;
-    ctx.beginPath();
-    for (let corner = 0; corner < 5; corner++) {
-      const angle = spin + (corner * 2 * Math.PI) / 5 - Math.PI / 2;
-      const x = centreX + Math.cos(angle) * radius;
-      const y = centreY + Math.sin(angle) * radius;
-      if (corner === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-  return new THREE.CanvasTexture(canvas);
-}
-
-const soccerTexture = makeSoccerTexture();
-
-type Aim = { from: [number, number, number]; to: [number, number, number] };
-type Mesh = { verts: Float32Array; idx: Uint32Array };
-type Split = {
-  left: Mesh;
-  right: Mesh;
-  leftGeo: THREE.BufferGeometry;
-  rightGeo: THREE.BufferGeometry;
-  size: { width: number; depth: number; height: number; minY: number };
-};
-
-// Build a renderable geometry from a trimesh, so the goal collider can be shown.
-function toGeometry(mesh: Mesh) {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(mesh.verts, 3));
-  geometry.setIndex(new THREE.BufferAttribute(mesh.idx, 1));
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-// Turn the model's triangles into two trimeshes, split down the middle so each
-// goal (left/right end) becomes its own precise collider.
-function splitGoals(scene: THREE.Object3D): Split | null {
-  const clone = scene.clone(true);
-  clone.updateMatrixWorld(true);
-  let geometry: THREE.BufferGeometry | null = null;
-  clone.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    if (mesh.isMesh && !geometry) {
-      geometry = mesh.geometry.clone();
-      geometry.applyMatrix4(mesh.matrixWorld);
-    }
-  });
-  if (!geometry) return null;
-
-  const position = (geometry as THREE.BufferGeometry).getAttribute("position");
-  const index = (geometry as THREE.BufferGeometry).getIndex();
-  const box = new THREE.Box3().setFromBufferAttribute(
-    position as THREE.BufferAttribute,
-  );
-  const midX = (box.min.x + box.max.x) / 2;
-
-  const left: number[] = [];
-  const right: number[] = [];
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  const triangles = index ? index.count / 3 : position.count / 3;
-  for (let t = 0; t < triangles; t++) {
-    const i0 = index ? index.getX(t * 3) : t * 3;
-    const i1 = index ? index.getX(t * 3 + 1) : t * 3 + 1;
-    const i2 = index ? index.getX(t * 3 + 2) : t * 3 + 2;
-    a.fromBufferAttribute(position, i0);
-    b.fromBufferAttribute(position, i1);
-    c.fromBufferAttribute(position, i2);
-    const target = (a.x + b.x + c.x) / 3 < midX ? left : right;
-    target.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-  }
-
-  const toMesh = (values: number[]): Mesh => {
-    const verts = new Float32Array(values);
-    const idx = new Uint32Array(verts.length / 3);
-    for (let i = 0; i < idx.length; i++) idx[i] = i;
-    return { verts, idx };
-  };
-
-  const leftMesh = toMesh(left);
-  const rightMesh = toMesh(right);
-  return {
-    left: leftMesh,
-    right: rightMesh,
-    leftGeo: toGeometry(leftMesh),
-    rightGeo: toGeometry(rightMesh),
-    size: {
-      width: box.max.x - box.min.x,
-      depth: box.max.z - box.min.z,
-      height: box.max.y - box.min.y,
-      minY: box.min.y,
-    },
-  };
-}
-
-// Only the ball should trip a goal sensor — not the walls or the goal itself.
-function ballEntered(payload: {
-  other: { rigidBodyObject?: THREE.Object3D | null };
-}) {
-  return payload.other.rigidBodyObject?.userData?.ball === true;
-}
+import { splitGoals, computeGoalLayout, toWorld, type Split } from "../../lib/goalPhysics";
+import { useAimAndShoot } from "../../hooks/useAimAndShoot";
+import GoalPitch from "../GoalPitch/GoalPitch";
+import GoalPosts from "../GoalPosts/GoalPosts";
+import GoalBall from "../GoalBall/GoalBall";
 
 // center is the goals' position in scene metres (world XZ); rotation matches the
 // placed model. The pitch is built inside one rotated body, so the two goals sit
 // along the model's long (local X) axis just like what you see.
-function GoalGame({
-  center,
-  url,
-  rotation,
-}: {
+interface GoalGameProps {
   center: { x: number; z: number };
   url: string;
   rotation: number;
-}) {
+}
+
+function GoalGame({ center, url, rotation }: GoalGameProps) {
   const map = useMap();
   const { scene } = useGLTF(url);
   const scoreLeft = useGameStore((state) => state.scoreLeft);
@@ -160,10 +38,7 @@ function GoalGame({
   const setPlayBounds = useGameStore((state) => state.setPlayBounds);
 
   const ballRef = useRef<RapierRigidBody>(null!);
-  const ballMeshRef = useRef<THREE.Mesh>(null!);
-  const draggingRef = useRef(false);
-  const scoredRef = useRef(false); // one goal per shot, until the next kick
-  const [aim, setAim] = useState<Aim | null>(null);
+  const ballMeshRef = useRef<Mesh>(null!);
 
   // Build the two goal colliders + measurements from the model, once.
   const [goals, setGoals] = useState<Split | null>(null);
@@ -201,44 +76,47 @@ function GoalGame({
     debug: { value: BALL_GAME.debug, label: "show colliders" },
   });
 
-  const size = goals?.size ?? { width: 22, depth: 3.2, height: 1.5, minY: 0 };
-  const halfX = (size.width * margin) / 2;
-  const halfZ = (size.depth * margin) / 2;
-  const wallHeight = size.height;
-  const wallThickness = 0.3;
-  const spawnY = ballRadius + 0.05;
-  const restY = -size.minY;
+  // Where everything (walls, goals, ball start) sits in world space, based on
+  // the visible goal model's live placement. pitch/posts/ball are pre-shaped
+  // to spread straight onto the matching child; the rest is what GoalGame
+  // itself computes with below.
+  const {
+    pitch,
+    posts,
+    ball,
+    halfX,
+    halfZ,
+    boxWX,
+    boxWZ,
+    spawnY,
+    startWX,
+    startWZ,
+    maxPull,
+  } = computeGoalLayout({
+    center,
+    rotation,
+    goalPlacement,
+    goals,
+    ballRadius,
+    margin,
+    boxCenter,
+    ballStart,
+    goalsOffset,
+    goalsRotate,
+  });
 
-  // Base the physics goals on the visible model's live placement so they overlap
-  // exactly (falls back to the config values before the model reports in).
-  const cx = goalPlacement?.x ?? center.x;
-  const cz = goalPlacement?.z ?? center.z;
-  const spinY = ((goalPlacement?.rotation ?? rotation) * Math.PI) / 180;
-  const cos = Math.cos(spinY);
-  const sin = Math.sin(spinY);
-
-  // Rotate a local (x, z) offset around a centre into world XZ.
-  const toWorld = (ax: number, az: number, lx: number, lz: number) =>
-    [ax + lx * cos + lz * sin, az - lx * sin + lz * cos] as const;
-
-  // The box (walls + ground + ball) can be nudged off the model centre via the
-  // Leva "box center" offset; the goals + scoring stay locked to the model.
-  const [boxWX, boxWZ] = toWorld(cx, cz, boxCenter.x, boxCenter.z);
-
-  // The goal colliders (+ their visualisation) can be moved/scaled for tuning.
-  const [goalWX, goalWZ] = toWorld(cx, cz, goalsOffset.x, goalsOffset.z);
-  const goalPos: [number, number, number] = [goalWX, restY, goalWZ];
-  const goalRotY = spinY + (goalsRotate * Math.PI) / 180;
-  const goalKey =
-    goalsOffset.x + "_" + goalsOffset.z + "_" + goalsRotate;
-
-  // Keep the ball start inside the walls, then place it relative to the box.
-  const clamp = (value: number, limit: number) =>
-    Math.max(-limit, Math.min(limit, value));
-  const sx = clamp(ballStart.x, halfX - ballRadius - wallThickness);
-  const sz = clamp(ballStart.z, halfZ - ballRadius - wallThickness);
-  const [startWX, startWZ] = toWorld(boxWX, boxWZ, sx, sz);
-  const maxPull = Math.max(halfX, halfZ);
+  const { aim, onBallDown, moveDrag, endDrag, registerGoal, setCursor } =
+    useAimAndShoot({
+      map,
+      ballRef,
+      ballMeshRef,
+      playing,
+      startGame,
+      setAiming,
+      spawnY,
+      kick,
+      maxPull,
+    });
 
   // Publish the play-box footprint (the walls) as a lng/lat rectangle so the map
   // can fence panning to it while the game runs.
@@ -254,8 +132,7 @@ function GoalGame({
     let maxLng = -Infinity;
     let maxLat = -Infinity;
     for (const [lx, lz] of corners) {
-      const wx = boxWX + lx * cos + lz * sin;
-      const wz = boxWZ - lx * sin + lz * cos;
+      const [wx, wz] = toWorld(boxWX, boxWZ, pitch.spinY, lx, lz);
       const { longitude, latitude } = vector3ToCoords([wx, 0, wz], COORDS);
       minLng = Math.min(minLng, longitude);
       maxLng = Math.max(maxLng, longitude);
@@ -267,205 +144,45 @@ function GoalGame({
       [maxLng, maxLat],
     ]);
     return () => setPlayBounds(null);
-  }, [boxWX, boxWZ, halfX, halfZ, cos, sin, setPlayBounds]);
+  }, [boxWX, boxWZ, halfX, halfZ, pitch.spinY, setPlayBounds]);
 
   // The map only renders on demand, so keep it ticking while we play.
   useFrame(() => map.triggerRepaint());
 
   // Put the ball back on its start spot whenever resetToken changes.
   useEffect(() => {
-    const ball = ballRef.current;
-    if (!ball) return;
-    ball.setTranslation({ x: startWX, y: spawnY, z: startWZ }, true);
-    ball.setLinvel({ x: 0, y: 0, z: 0 }, true);
-    ball.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    const ballBody = ballRef.current;
+    if (!ballBody) return;
+    ballBody.setTranslation({ x: startWX, y: spawnY, z: startWZ }, true);
+    ballBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    ballBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
   }, [resetToken, startWX, startWZ, spawnY]);
-
-  // Safety net: releasing the pointer anywhere ends the aim (and re-enables the
-  // map), even if you let go off the pitch.
-  useEffect(() => {
-    const stop = () => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      setAim(null);
-      setAiming(false);
-    };
-    window.addEventListener("pointerup", stop);
-    return () => window.removeEventListener("pointerup", stop);
-  }, [setAiming]);
-
-  const ballWorld = () => {
-    const point = new THREE.Vector3();
-    ballMeshRef.current.getWorldPosition(point);
-    return point;
-  };
-
-  // Ball hover shows a pointer cursor; clicking an idle ball starts the game.
-  const setCursor = (value: string) => {
-    const canvas = map.getCanvas();
-    if (canvas) canvas.style.cursor = value;
-  };
-  const onBallDown = (event: ThreeEvent<PointerEvent>) => {
-    if (!playing) {
-      event.stopPropagation();
-      startGame();
-      return;
-    }
-    startDrag(event);
-  };
-
-  // Click the ball, drag out to aim (direction + power), release to shoot.
-  const startDrag = (event: ThreeEvent<PointerEvent>) => {
-    event.stopPropagation();
-    draggingRef.current = true;
-    scoredRef.current = false; // allow a fresh goal for this kick
-    setAiming(true); // pause map panning while aiming
-    const from = ballWorld();
-    setAim({ from: [from.x, spawnY, from.z], to: [from.x, spawnY, from.z] });
-  };
-
-  const moveDrag = (event: ThreeEvent<PointerEvent>) => {
-    if (!draggingRef.current) return;
-    setAim((current) =>
-      current
-        ? { from: current.from, to: [event.point.x, spawnY, event.point.z] }
-        : current,
-    );
-  };
-
-  const endDrag = (event: ThreeEvent<PointerEvent>) => {
-    if (!draggingRef.current) return;
-    draggingRef.current = false;
-    setAim(null);
-    setAiming(false);
-
-    const from = ballWorld();
-    const direction = new THREE.Vector3(
-      event.point.x - from.x,
-      0,
-      event.point.z - from.z,
-    );
-    const distance = direction.length();
-    if (distance < 0.05) return;
-    const strength = Math.min(distance, maxPull) / maxPull;
-    direction.normalize().multiplyScalar(strength * kick);
-    ballRef.current.applyImpulse({ x: direction.x, y: 0, z: direction.z }, true);
-  };
-
-  // Score once per shot: the trimesh fires many collision events while the ball
-  // rests against it, so ignore repeats until the next kick.
-  const registerGoal = (
-    payload: { other: { rigidBodyObject?: THREE.Object3D | null } },
-    score: () => void,
-  ) => {
-    if (!playing || scoredRef.current || !ballEntered(payload)) return;
-    scoredRef.current = true;
-    score(); // bumps resetToken, which teleports the ball back to its start
-  };
 
   return (
     <Physics gravity={[0, -9.81, 0]} debug={debug}>
-      {/* Ground + four walls, built around the (movable) box centre. */}
-      <RigidBody type="fixed" position={[boxWX, 0, boxWZ]} rotation={[0, spinY, 0]}>
-        <CuboidCollider args={[halfX, 0.5, halfZ]} position={[0, -0.5, 0]} friction={0.2} />
-        <CuboidCollider args={[wallThickness, wallHeight, halfZ]} position={[halfX, wallHeight, 0]} restitution={0.5} />
-        <CuboidCollider args={[wallThickness, wallHeight, halfZ]} position={[-halfX, wallHeight, 0]} restitution={0.5} />
-        <CuboidCollider args={[halfX, wallHeight, wallThickness]} position={[0, wallHeight, halfZ]} restitution={0.5} />
-        <CuboidCollider args={[halfX, wallHeight, wallThickness]} position={[0, wallHeight, -halfZ]} restitution={0.5} />
-      </RigidBody>
+      <GoalPitch {...pitch} showCenter={showCenter} onDrag={moveDrag} onDragEnd={endDrag} />
 
-      {/* Center marker — a magenta pole at the box centre for tuning. */}
-      {showCenter && (
-        <group position={[boxWX, 0, boxWZ]}>
-          <mesh position={[0, wallHeight, 0]}>
-            <sphereGeometry args={[0.35, 16, 16]} />
-            <meshBasicMaterial color="#ff2fd0" />
-          </mesh>
-          <mesh position={[0, wallHeight / 2, 0]}>
-            <cylinderGeometry args={[0.06, 0.06, wallHeight * 2, 8]} />
-            <meshBasicMaterial color="#ff2fd0" />
-          </mesh>
-        </group>
-      )}
-
-      {/* Invisible pitch — only follows the drag while aiming. */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[boxWX, 0.02, boxWZ]}
-        onPointerMove={moveDrag}
-        onPointerUp={endDrag}
-      >
-        <planeGeometry args={[halfX * 3, halfX * 3]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-
-      {/* Aim line while dragging. */}
-      {aim && <Line points={[aim.from, aim.to]} color="#ffcc00" lineWidth={3} />}
-
-      {/* Goal colliders — one solid trimesh per goal. Each reports the ball
-          hitting it (onCollisionEnter), so the hull itself is the goal detection
-          — no separate sensor box needed. */}
       {goals && (
-        <>
-          <RigidBody
-            key={"L" + goalKey}
-            type="fixed"
-            colliders={false}
-            position={goalPos}
-            rotation={[0, goalRotY, 0]}
-            onCollisionEnter={(payload) => registerGoal(payload, scoreLeft)}
-          >
-            <TrimeshCollider args={[goals.left.verts, goals.left.idx]} />
-          </RigidBody>
-          <RigidBody
-            key={"R" + goalKey}
-            type="fixed"
-            colliders={false}
-            position={goalPos}
-            rotation={[0, goalRotY, 0]}
-            onCollisionEnter={(payload) => registerGoal(payload, scoreRight)}
-          >
-            <TrimeshCollider args={[goals.right.verts, goals.right.idx]} />
-          </RigidBody>
-        </>
+        <GoalPosts
+          goals={goals}
+          {...posts}
+          showDebug={showGoals}
+          onLeftCollision={(payload) => registerGoal(payload, scoreLeft)}
+          onRightCollision={(payload) => registerGoal(payload, scoreRight)}
+        />
       )}
 
-      {/* Visualise the two goal collision walls the ball hits. */}
-      {goals && showGoals && (
-        <group position={goalPos} rotation={[0, goalRotY, 0]}>
-          <mesh geometry={goals.leftGeo}>
-            <meshBasicMaterial color="#00e5ff" transparent opacity={0.4} side={THREE.DoubleSide} depthWrite={false} />
-          </mesh>
-          <mesh geometry={goals.rightGeo}>
-            <meshBasicMaterial color="#ff7a1a" transparent opacity={0.4} side={THREE.DoubleSide} depthWrite={false} />
-          </mesh>
-        </group>
-      )}
-
-      {/* The ball. */}
-      <RigidBody
-        ref={ballRef}
-        userData={{ ball: true }}
-        colliders="ball"
-        ccd
-        position={[startWX, spawnY, startWZ]}
-        restitution={0.5}
-        friction={0.2}
-        linearDamping={0.1}
-        angularDamping={0.2}
-      >
-        <mesh
-          ref={ballMeshRef}
-          onPointerDown={onBallDown}
-          onPointerMove={moveDrag}
-          onPointerUp={endDrag}
-          onPointerOver={() => setCursor("pointer")}
-          onPointerOut={() => setCursor("")}
-        >
-          <sphereGeometry args={[ballRadius, 32, 32]} />
-          <meshStandardMaterial map={soccerTexture} roughness={0.6} />
-        </mesh>
-      </RigidBody>
+      <GoalBall
+        ballRef={ballRef}
+        ballMeshRef={ballMeshRef}
+        radius={ballRadius}
+        {...ball}
+        aim={aim}
+        onBallDown={onBallDown}
+        onDrag={moveDrag}
+        onDragEnd={endDrag}
+        setCursor={setCursor}
+      />
     </Physics>
   );
 }

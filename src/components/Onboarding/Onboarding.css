@@ -1,4 +1,4 @@
-.onboarding {
+.c-onboarding {
     position: fixed;
     inset: 0;
     z-index: var(--z-onboarding);
@@ -9,7 +9,7 @@
     pointer-events: none; /* let scroll/drag/click reach the map underneath */
 }
 
-.onboarding__card {
+.c-onboarding__card {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -37,7 +37,7 @@
     }
 }
 
-.onboarding__icon {
+.c-onboarding__icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,15 +51,6 @@
     animation: onboarding-bob 1.4s ease-in-out infinite;
 }
 
-.onboarding__mouse {
-    width: 42px;
-    height: auto;
-}
-
-.onboarding__mouse-fill {
-    fill: var(--accent);
-}
-
 @keyframes onboarding-bob {
     0%,
     100% {
@@ -70,7 +61,7 @@
     }
 }
 
-.onboarding__icon--done {
+.c-onboarding__icon[data-done] {
     background: var(--accent);
     color: #fff;
     animation: onboarding-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -85,7 +76,7 @@
     }
 }
 
-.onboarding__count {
+.c-onboarding__count {
     font-size: var(--font-sm);
     font-weight: var(--weight-bold);
     letter-spacing: 0.4px;
@@ -93,27 +84,27 @@
     color: var(--accent);
 }
 
-.onboarding__title {
+.c-onboarding__title {
     font-family: var(--heading);
     font-size: var(--font-lg);
     font-weight: var(--weight-bold);
     color: var(--text-h);
 }
 
-.onboarding__hint {
+.c-onboarding__hint {
     margin: 0;
     font-size: var(--font-sm);
     font-weight: var(--weight-semibold);
     color: var(--text);
 }
 
-.onboarding__dots {
+.c-onboarding__dots {
     display: flex;
     gap: var(--space-2);
     margin-top: var(--space-1);
 }
 
-.onboarding__dot {
+.c-onboarding__dot {
     width: var(--space-3);
     height: var(--space-3);
     border-radius: var(--radius-pill);
@@ -124,18 +115,18 @@
         background 200ms ease;
 }
 
-.onboarding__dot--on {
+.c-onboarding__dot[data-on] {
     width: calc(var(--space-3) * 2.5);
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.onboarding__dot--past {
+.c-onboarding__dot[data-past] {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.onboarding__skip {
+.c-onboarding__skip {
     pointer-events: auto;
     padding: var(--space-1) var(--space-2);
     border: none;
@@ -145,6 +136,6 @@
     cursor: pointer;
 }
 
-.onboarding__skip:hover {
+.c-onboarding__skip:hover {
     color: var(--text-h);
 }

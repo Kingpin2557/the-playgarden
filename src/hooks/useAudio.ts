@@ -1,6 +1,12 @@
 import { useEffect, useRef } from "react";
 
-import { useWeatherStore, type WeatherMode } from "../store/weatherStore";
+import {
+  useWeatherStore,
+  isRaining,
+  isSnowing,
+  isThundering,
+  type WeatherMode,
+} from "../store/weatherStore";
 import { useAppStore } from "../store/appStore";
 import type { Weather } from "../lib/weatherApi";
 import { createAudioLoop } from "../lib/audioLoop";
@@ -16,15 +22,11 @@ const AMBIENT_SOURCES = {
 
 type AmbientKey = keyof typeof AMBIENT_SOURCES;
 
+// A thunderstorm still gets the rain loop — it's stormy weather, not its own
+// ambient track.
 function pickAmbient(mode: WeatherMode, weather: Weather | null): AmbientKey | null {
-  const isSnow = mode === "snow" || (mode === "auto" && !!weather?.isSnow);
-  const isRain =
-    mode === "rain" ||
-    (mode === "auto" &&
-      (!!weather?.isThunder || (weather?.precipitation ?? 0) > 0));
-
-  if (isSnow) return "snow";
-  if (isRain) return "rain";
+  if (isSnowing(mode, weather)) return "snow";
+  if (isRaining(mode, weather) || isThundering(mode, weather)) return "rain";
   return null;
 }
 
