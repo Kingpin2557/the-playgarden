@@ -21,15 +21,20 @@ function loadBuffer(url: string) {
   return buffer;
 }
 
-export async function playOneShot(url: string, volume: number) {
-  const context = getContext();
-  const buffer = await loadBuffer(url);
 
-  context.resume();
+function createGain(context: AudioContext, volume: number) {
   const gain = context.createGain();
   gain.gain.value = volume;
   gain.connect(context.destination);
+  return gain;
+}
 
+export async function playOneShot(url: string, volume: number) {
+  const context = getContext();
+  const buffer = await loadBuffer(url);
+  context.resume();
+
+  const gain = createGain(context, volume);
   const source = context.createBufferSource();
   source.buffer = buffer;
   source.connect(gain);
@@ -42,19 +47,15 @@ export async function playOneShot(url: string, volume: number) {
 
 export function createAudioLoop(volume: number) {
   const context = getContext();
-  const gain = context.createGain();
-  gain.gain.value = volume;
-  gain.connect(context.destination);
+  const gain = createGain(context, volume);
 
   let source: AudioBufferSourceNode | null = null;
   let currentUrl: string | null = null;
 
   function stop() {
-    if (source) {
-      source.stop();
-      source.disconnect();
-      source = null;
-    }
+    source?.stop();
+    source?.disconnect();
+    source = null;
     currentUrl = null;
   }
 

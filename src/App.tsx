@@ -120,8 +120,8 @@ function App() {
 
   const panBounds = useMapStore((state) => state.panBounds);
 
-  const isProd = import.meta.env.VITE_IS_PROD === "true";
-  const hideLeva = isProd;
+
+  const hideLeva = import.meta.env.VITE_IS_PROD === "true";
 
   const { hideUi } = useControls("Debug", {
     hideUi: { value: false, label: "hide UI" },
